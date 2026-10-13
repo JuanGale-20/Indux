@@ -5,6 +5,7 @@ import com.indux.induxbackend.application.port.in.EmpresaUseCase;
 import com.indux.induxbackend.application.port.out.EmpresaRepositoryPort;
 import com.indux.induxbackend.domain.exception.NoEncontradoException;
 import com.indux.induxbackend.domain.model.Empresa;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,5 +27,11 @@ public class EmpresaService implements EmpresaUseCase {
     public Empresa obtener(Long id) {
         return empresas.buscarPorId(id)
                 .orElseThrow(() -> new NoEncontradoException("No existe la empresa con id " + id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Empresa> listar() {
+        return empresas.listar();
     }
 }

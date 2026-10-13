@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -42,5 +44,11 @@ public class UsuarioService implements UsuarioUseCase {
             throw new ConflictoException("Ya existe un usuario con el correo " + nuevo.email());
         }
         return usuarios.guardar(nuevo);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Usuario> listar() {
+        return usuarios.listar();
     }
 }

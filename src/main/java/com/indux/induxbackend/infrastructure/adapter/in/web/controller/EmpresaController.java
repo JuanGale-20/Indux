@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -33,5 +34,10 @@ public class EmpresaController {
     public EmpresaResponse obtener(@PathVariable Long id, Authentication autenticacion) {
         acceso.verificarEmpresa(autenticacion, id);
         return EmpresaResponse.desde(empresas.obtener(id));
+    }
+
+    @GetMapping
+    public List<EmpresaResponse> listar() {
+        return empresas.listar().stream().map(EmpresaResponse::desde).toList();
     }
 }

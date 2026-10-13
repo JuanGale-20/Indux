@@ -31,8 +31,15 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/api/auth/**", "/actuator/health", "/error").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/empresas", "/api/usuarios").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,
                                 "/api/empresas", "/api/productos", "/api/procesos", "/api/usuarios")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/empresas/**", "/api/productos/**",
+                                "/api/procesos/**", "/api/usuarios/**")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/empresas/**", "/api/productos/**",
+                                "/api/procesos/**", "/api/usuarios/**")
                         .hasRole("ADMIN")
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().denyAll())

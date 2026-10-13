@@ -7,6 +7,7 @@ import com.indux.induxbackend.infrastructure.adapter.out.persistence.repository.
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -33,5 +34,10 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
     @Override
     public boolean existePorEmail(String email) {
         return repository.existsByEmail(email);
+    }
+
+    @Override
+    public List<Usuario> listar() {
+        return repository.findAll().stream().map(UsuarioMapper::toDomain).toList();
     }
 }

@@ -7,6 +7,7 @@ import com.indux.induxbackend.infrastructure.adapter.out.persistence.repository.
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -23,5 +24,10 @@ public class EmpresaPersistenceAdapter implements EmpresaRepositoryPort {
     @Override
     public Optional<Empresa> buscarPorId(Long id) {
         return repository.findById(id).map(EmpresaMapper::toDomain);
+    }
+
+    @Override
+    public List<Empresa> listar() {
+        return repository.findAll().stream().map(EmpresaMapper::toDomain).toList();
     }
 }
