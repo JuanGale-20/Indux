@@ -12,6 +12,13 @@ public interface ProductoUseCase {
 
     List<Producto> listarPorEmpresa(Long empresaId);
 
+    Producto actualizar(Long id, ActualizarProductoComando comando);
+
+    void eliminar(Long id);
+
     record CrearProductoComando(Long empresaId, String codigo, String nombre, String unidadMedida) {
+    }
+
+    record ActualizarProductoComando(String codigo, String nombre, String unidadMedida) {
     }
 }

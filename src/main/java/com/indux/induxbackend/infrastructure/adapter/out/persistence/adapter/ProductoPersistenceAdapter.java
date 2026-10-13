@@ -1,10 +1,12 @@
 package com.indux.induxbackend.infrastructure.adapter.out.persistence.adapter;
 
 import com.indux.induxbackend.application.port.out.ProductoRepositoryPort;
+import com.indux.induxbackend.domain.exception.ConflictoException;
 import com.indux.induxbackend.domain.model.Producto;
 import com.indux.induxbackend.infrastructure.adapter.out.persistence.mapper.ProductoMapper;
 import com.indux.induxbackend.infrastructure.adapter.out.persistence.repository.ProductoJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -34,5 +36,16 @@ public class ProductoPersistenceAdapter implements ProductoRepositoryPort {
     @Override
     public boolean existePorEmpresaYCodigo(Long empresaId, String codigo) {
         return repository.existsByEmpresaIdAndCodigo(empresaId, codigo);
+    }
+
+    @Override
+    public void eliminar(Long id) {
+        try {
+            repository.deleteById(id);
+            repository.flush(); // fuerza la validación de llaves foráneas aquí
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictoException(
+                    "No se puede eliminar el producto porque tiene procesos o reportes asociados");
+        }
     }
 }

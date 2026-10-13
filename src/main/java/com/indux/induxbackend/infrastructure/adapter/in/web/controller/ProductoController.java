@@ -1,8 +1,10 @@
 package com.indux.induxbackend.infrastructure.adapter.in.web.controller;
 
 import com.indux.induxbackend.application.port.in.ProductoUseCase;
+import com.indux.induxbackend.application.port.in.ProductoUseCase.ActualizarProductoComando;
 import com.indux.induxbackend.application.port.in.ProductoUseCase.CrearProductoComando;
 import com.indux.induxbackend.domain.model.Producto;
+import com.indux.induxbackend.infrastructure.adapter.in.web.dto.ActualizarProductoRequest;
 import com.indux.induxbackend.infrastructure.adapter.in.web.dto.CrearProductoRequest;
 import com.indux.induxbackend.infrastructure.adapter.in.web.dto.ProductoResponse;
 import com.indux.induxbackend.infrastructure.security.AccesoPorEmpresa;
@@ -41,5 +43,18 @@ public class ProductoController {
                                                    Authentication autenticacion) {
         acceso.verificarEmpresa(autenticacion, empresaId);
         return productos.listarPorEmpresa(empresaId).stream().map(ProductoResponse::desde).toList();
+    }
+
+    @PutMapping("/{id}")
+    public ProductoResponse actualizar(@PathVariable Long id,
+                                       @Valid @RequestBody ActualizarProductoRequest r) {
+        return ProductoResponse.desde(productos.actualizar(id,
+                new ActualizarProductoComando(r.codigo(), r.nombre(), r.unidadMedida())));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        productos.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 }

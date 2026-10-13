@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProcesoRepositoryPort {
+
     Proceso guardar(Proceso proceso);
 
     Optional<Proceso> buscarPorId(Long id);
@@ -15,4 +16,6 @@ public interface ProcesoRepositoryPort {
     boolean existePorProductoYCodigo(Long productoId, String codigo);
 
     boolean existePorProductoYSecuencia(Long productoId, int secuencia);
+
+    void eliminar(Long id);
 }

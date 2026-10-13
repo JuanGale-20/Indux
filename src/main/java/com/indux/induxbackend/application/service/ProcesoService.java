@@ -31,9 +31,7 @@ public class ProcesoService implements ProcesoUseCase {
         Proceso nuevo = new Proceso(null, c.productoId(), c.liderId(), c.codigo(),
                 c.nombre(), c.secuencia(), c.unidadProcesada());
 
-        Producto producto = productos.buscarPorId(nuevo.productoId())
-                .orElseThrow(() -> new NoEncontradoException(
-                        "No existe el producto con id " + nuevo.productoId()));
+        Producto producto = buscarProducto(nuevo.productoId());
 
         validarLider(nuevo.liderId(), producto);
 
@@ -50,10 +48,49 @@ public class ProcesoService implements ProcesoUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    public Proceso obtener(Long id) {
+        return procesos.buscarPorId(id)
+                .orElseThrow(() -> new NoEncontradoException("No existe el proceso con id " + id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Proceso> listarPorProducto(Long productoId) {
-        productos.buscarPorId(productoId)
-                .orElseThrow(() -> new NoEncontradoException("No existe el producto con id " + productoId));
+        buscarProducto(productoId);
         return procesos.listarPorProductoOrdenadoPorSecuencia(productoId);
+    }
+
+    @Override
+    public Proceso actualizar(Long id, ActualizarProcesoComando c) {
+        Proceso actual = obtener(id);
+        Proceso nuevo = new Proceso(id, actual.productoId(), c.liderId(), c.codigo(),
+                c.nombre(), c.secuencia(), c.unidadProcesada());
+
+        Producto producto = buscarProducto(actual.productoId());
+        validarLider(nuevo.liderId(), producto);
+
+        if (!nuevo.codigo().equals(actual.codigo())
+                && procesos.existePorProductoYCodigo(nuevo.productoId(), nuevo.codigo())) {
+            throw new ConflictoException(
+                    "Ya existe un proceso con el código " + nuevo.codigo() + " en este producto");
+        }
+        if (nuevo.secuencia() != actual.secuencia()
+                && procesos.existePorProductoYSecuencia(nuevo.productoId(), nuevo.secuencia())) {
+            throw new ConflictoException(
+                    "Ya existe un proceso con la secuencia " + nuevo.secuencia() + " en este producto");
+        }
+        return procesos.guardar(nuevo);
+    }
+
+    @Override
+    public void eliminar(Long id) {
+        obtener(id);
+        procesos.eliminar(id);
+    }
+
+    private Producto buscarProducto(Long productoId) {
+        return productos.buscarPorId(productoId)
+                .orElseThrow(() -> new NoEncontradoException("No existe el producto con id " + productoId));
     }
 
     private void validarLider(Long liderId, Producto producto) {

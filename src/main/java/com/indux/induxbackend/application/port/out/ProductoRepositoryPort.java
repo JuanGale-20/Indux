@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductoRepositoryPort {
+
     Producto guardar(Producto producto);
 
     Optional<Producto> buscarPorId(Long id);
@@ -13,4 +14,6 @@ public interface ProductoRepositoryPort {
     List<Producto> listarPorEmpresa(Long empresaId);
 
     boolean existePorEmpresaYCodigo(Long empresaId, String codigo);
+
+    void eliminar(Long id);
 }

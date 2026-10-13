@@ -1,10 +1,12 @@
 package com.indux.induxbackend.infrastructure.adapter.out.persistence.adapter;
 
 import com.indux.induxbackend.application.port.out.ProcesoRepositoryPort;
+import com.indux.induxbackend.domain.exception.ConflictoException;
 import com.indux.induxbackend.domain.model.Proceso;
 import com.indux.induxbackend.infrastructure.adapter.out.persistence.mapper.ProcesoMapper;
 import com.indux.induxbackend.infrastructure.adapter.out.persistence.repository.ProcesoJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -40,5 +42,15 @@ public class ProcesoPersistenceAdapter implements ProcesoRepositoryPort {
     @Override
     public boolean existePorProductoYSecuencia(Long productoId, int secuencia) {
         return repository.existsByProductoIdAndSecuencia(productoId, secuencia);
+    }
+
+    @Override
+    public void eliminar(Long id) {
+        try {
+            repository.deleteById(id);
+            repository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictoException("No se puede eliminar el proceso porque tiene recursos asociados");
+        }
     }
 }

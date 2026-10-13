@@ -46,4 +46,22 @@ public class ProductoService implements ProductoUseCase {
     public List<Producto> listarPorEmpresa(Long empresaId) {
         return productos.listarPorEmpresa(empresaId);
     }
+
+    @Override
+    public Producto actualizar(Long id, ActualizarProductoComando c) {
+        Producto actual = obtener(id);
+        Producto nuevo = new Producto(id, actual.empresaId(), c.codigo(), c.nombre(), c.unidadMedida());
+
+        if (!nuevo.codigo().equals(actual.codigo())
+                && productos.existePorEmpresaYCodigo(nuevo.empresaId(), nuevo.codigo())) {
+            throw new ConflictoException("Ya existe un producto con el código " + nuevo.codigo());
+        }
+        return productos.guardar(nuevo);
+    }
+
+    @Override
+    public void eliminar(Long id) {
+        obtener(id); // 404 si no existe
+        productos.eliminar(id);
+    }
 }
