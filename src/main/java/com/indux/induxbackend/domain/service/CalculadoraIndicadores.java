@@ -19,7 +19,7 @@ public class CalculadoraIndicadores {
 
         validar(demanda, tiempoProcesamiento, turnos, horasPorTurno, diasOperacion, cantidadRecursos);
 
-        // Horas requeridas = cantidad requerida × tiempo de procesamiento
+        // Horas requeridas = cantidad requerida (demanda) × tiempo de procesamiento
         BigDecimal horasRequeridas = demanda.multiply(tiempoProcesamiento);
 
         // Horas disponibles = turnos × horas por turno × días de operación × cantidad de recursos
@@ -38,8 +38,17 @@ public class CalculadoraIndicadores {
         // Holgura = horas disponibles − horas requeridas
         BigDecimal holgura = horasDisponibles.subtract(horasRequeridas);
 
+        // Déficit de horas = horas faltantes (solo si es positivo)
+        BigDecimal deficitHoras = horasRequeridas.subtract(horasDisponibles).max(BigDecimal.ZERO);
+
+        // Impacto (%) = horas faltantes ÷ horas requeridas × 100
+        BigDecimal impacto = horasRequeridas.signum() == 0
+                ? BigDecimal.ZERO.setScale(2)
+                : deficitHoras.multiply(CIEN).divide(horasRequeridas, 2, RoundingMode.HALF_UP);
+
         return new IndicadoresRecurso(
                 horasRequeridas, horasDisponibles, capacidad, utilizacion, holgura,
+                deficitHoras, impacto,
                 ClasificacionRestriccion.desdeUtilizacion(utilizacion));
     }
 

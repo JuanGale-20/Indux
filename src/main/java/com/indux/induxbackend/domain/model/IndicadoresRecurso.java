@@ -8,5 +8,7 @@ public record IndicadoresRecurso(
         BigDecimal capacidad,
         BigDecimal utilizacion,
         BigDecimal holgura,
+        BigDecimal deficitHoras,
+        BigDecimal impacto,
         ClasificacionRestriccion clasificacion) {
 }

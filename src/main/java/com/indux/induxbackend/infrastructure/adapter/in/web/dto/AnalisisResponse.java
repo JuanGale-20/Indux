@@ -11,6 +11,7 @@ public record AnalisisResponse(List<RecursoResultado> recursos) {
     public record RecursoResultado(int prioridad, String nombre,
                                    BigDecimal horasRequeridas, BigDecimal horasDisponibles,
                                    BigDecimal capacidad, BigDecimal utilizacion, BigDecimal holgura,
+                                   BigDecimal deficitHoras, BigDecimal impacto,
                                    BigDecimal deficitCapacidad,
                                    ClasificacionRestriccion clasificacion, String alerta) {
     }
@@ -20,7 +21,9 @@ public record AnalisisResponse(List<RecursoResultado> recursos) {
                 .map(x -> new RecursoResultado(x.prioridad(), x.nombre(),
                         x.indicadores().horasRequeridas(), x.indicadores().horasDisponibles(),
                         x.indicadores().capacidad(), x.indicadores().utilizacion(),
-                        x.indicadores().holgura(), x.deficitCapacidad(),
+                        x.indicadores().holgura(),
+                        x.indicadores().deficitHoras(), x.indicadores().impacto(),
+                        x.deficitCapacidad(),
                         x.clasificacion(), x.alerta()))
                 .toList());
     }

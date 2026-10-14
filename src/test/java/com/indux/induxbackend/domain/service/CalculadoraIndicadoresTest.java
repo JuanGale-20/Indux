@@ -13,7 +13,7 @@ class CalculadoraIndicadoresTest {
     private final CalculadoraIndicadores calculadora = new CalculadoraIndicadores();
 
     @Test
-    void demandaMayorQueLaCapacidadEsRestriccion() {
+    void demandaMayorQueLaCapacidadEsSobrecarga() {
         IndicadoresRecurso r = calculadora.calcular(
                 new BigDecimal("10000"), new BigDecimal("0.05"), 2, new BigDecimal("8"), 26, 1);
 
@@ -22,28 +22,36 @@ class CalculadoraIndicadoresTest {
         assertThat(r.capacidad()).isEqualByComparingTo("8320");
         assertThat(r.utilizacion()).isEqualByComparingTo("120.19");
         assertThat(r.holgura()).isEqualByComparingTo("-84");
-        assertThat(r.clasificacion()).isEqualTo(ClasificacionRestriccion.RESTRICCION_CAPACIDAD);
+        assertThat(r.deficitHoras()).isEqualByComparingTo("84");
+        assertThat(r.impacto()).isEqualByComparingTo("16.80");
+        assertThat(r.clasificacion()).isEqualTo(ClasificacionRestriccion.SOBRECARGA);
     }
 
     @Test
-    void recursoConHolguraNoTieneRestriccion() {
+    void recursoConHolguraTieneBajaUtilizacion() {
         IndicadoresRecurso r = calculadora.calcular(
                 new BigDecimal("5000"), new BigDecimal("0.05"), 2, new BigDecimal("8"), 26, 1);
 
         assertThat(r.utilizacion()).isEqualByComparingTo("60.10");
         assertThat(r.holgura()).isEqualByComparingTo("166");
-        assertThat(r.clasificacion()).isEqualTo(ClasificacionRestriccion.SIN_RESTRICCION);
+        assertThat(r.deficitHoras()).isEqualByComparingTo("0");
+        assertThat(r.impacto()).isEqualByComparingTo("0");
+        assertThat(r.clasificacion()).isEqualTo(ClasificacionRestriccion.BAJA_UTILIZACION);
     }
 
     @Test
-    void loslimitesDeLaClasificacionSeRespetan() {
+    void losLimitesDeLaClasificacionSeRespetan() {
         assertThat(ClasificacionRestriccion.desdeUtilizacion(new BigDecimal("79.99")))
-                .isEqualTo(ClasificacionRestriccion.SIN_RESTRICCION);
+                .isEqualTo(ClasificacionRestriccion.BAJA_UTILIZACION);
         assertThat(ClasificacionRestriccion.desdeUtilizacion(new BigDecimal("80")))
-                .isEqualTo(ClasificacionRestriccion.POSIBLE_RESTRICCION);
+                .isEqualTo(ClasificacionRestriccion.UTILIZACION_ADECUADA);
+        assertThat(ClasificacionRestriccion.desdeUtilizacion(new BigDecimal("90")))
+                .isEqualTo(ClasificacionRestriccion.UTILIZACION_ADECUADA);
+        assertThat(ClasificacionRestriccion.desdeUtilizacion(new BigDecimal("90.01")))
+                .isEqualTo(ClasificacionRestriccion.CAPACIDAD_AJUSTADA);
         assertThat(ClasificacionRestriccion.desdeUtilizacion(new BigDecimal("100")))
-                .isEqualTo(ClasificacionRestriccion.POSIBLE_RESTRICCION);
+                .isEqualTo(ClasificacionRestriccion.CAPACIDAD_AJUSTADA);
         assertThat(ClasificacionRestriccion.desdeUtilizacion(new BigDecimal("100.01")))
-                .isEqualTo(ClasificacionRestriccion.RESTRICCION_CAPACIDAD);
+                .isEqualTo(ClasificacionRestriccion.SOBRECARGA);
     }
 }

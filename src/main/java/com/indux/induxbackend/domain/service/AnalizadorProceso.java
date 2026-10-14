@@ -7,13 +7,25 @@ import java.util.*;
 
 public class AnalizadorProceso {
 
-    private static final Comparator<ResultadoRecurso> POR_GRAVEDAD =
-            Comparator.comparing((ResultadoRecurso r) -> r.indicadores().utilizacion()).reversed()
-                    .thenComparing(r -> r.indicadores().holgura())
-                    .thenComparing(ResultadoRecurso::deficitCapacidad, Comparator.reverseOrder());
+    // Prioridad jerárquica (no ponderada):
+    // 1) mayor impacto (horas faltantes / horas requeridas)
+    // 2) mayor déficit en horas
+    // 3) mayor utilización
+    // 4) menor holgura
+    private static final Comparator<ResultadoRecurso> POR_GRAVEDAD = (a, b) -> {
+        IndicadoresRecurso x = a.indicadores();
+        IndicadoresRecurso y = b.indicadores();
+        int c = y.impacto().compareTo(x.impacto());
+        if (c != 0) return c;
+        c = y.deficitHoras().compareTo(x.deficitHoras());
+        if (c != 0) return c;
+        c = y.utilizacion().compareTo(x.utilizacion());
+        if (c != 0) return c;
+        return x.holgura().compareTo(y.holgura());
+    };
 
     private final CalculadoraIndicadores calculadora;
-    private final BigDecimal umbralHolguraLimitada; // fracción de las horas disponibles, ej. 0.05
+    private final BigDecimal umbralHolguraLimitada; // fracción de las horas disponibles, ej. 0.10
 
     public AnalizadorProceso(CalculadoraIndicadores calculadora, BigDecimal umbralHolguraLimitada) {
         this.calculadora = calculadora;
@@ -41,9 +53,12 @@ public class AnalizadorProceso {
         List<Alerta> alertas = new ArrayList<>();
 
         switch (i.clasificacion()) {
-            case SIN_RESTRICCION -> alertas.add(Alerta.CAPACIDAD_DISPONIBLE);
-            case POSIBLE_RESTRICCION -> alertas.add(Alerta.ALTA_UTILIZACION);
-            case RESTRICCION_CAPACIDAD -> {
+            case BAJA_UTILIZACION -> alertas.add(Alerta.CAPACIDAD_DISPONIBLE);
+            case UTILIZACION_ADECUADA -> {
+                // Mantener y monitorear: sin alerta
+            }
+            case CAPACIDAD_AJUSTADA -> alertas.add(Alerta.ALTA_UTILIZACION);
+            case SOBRECARGA -> {
                 alertas.add(Alerta.CAPACIDAD_INSUFICIENTE);
                 alertas.add(Alerta.DEFICIT_CAPACIDAD);
             }
@@ -56,16 +71,16 @@ public class AnalizadorProceso {
         return List.copyOf(alertas);
     }
 
-    // Regla 5.1: solo se priorizan los recursos con alguna restricción
+    // Solo se priorizan los recursos con déficit de horas
     private List<ResultadoRecurso> priorizar(List<ResultadoRecurso> resultados) {
-        List<ResultadoRecurso> conRestriccion = resultados.stream()
-                .filter(r -> r.indicadores().clasificacion() != ClasificacionRestriccion.SIN_RESTRICCION)
+        List<ResultadoRecurso> conDeficit = resultados.stream()
+                .filter(r -> r.indicadores().deficitHoras().signum() > 0)
                 .sorted(POR_GRAVEDAD)
                 .toList();
 
         Map<Long, Integer> prioridades = new HashMap<>();
         int posicion = 1;
-        for (ResultadoRecurso r : conRestriccion) {
+        for (ResultadoRecurso r : conDeficit) {
             prioridades.put(r.entrada().recursoId(), posicion++);
         }
 

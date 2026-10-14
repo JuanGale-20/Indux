@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AnalizadorProcesoTest {
 
     private final AnalizadorProceso analizador =
-            new AnalizadorProceso(new CalculadoraIndicadores(), new BigDecimal("0.05"));
+            new AnalizadorProceso(new CalculadoraIndicadores(), new BigDecimal("0.10"));
 
     private EntradaRecurso recurso(long id, String nombre, String tiempo) {
         return new EntradaRecurso(id, "R" + id, nombre, 1,
@@ -21,7 +21,7 @@ class AnalizadorProcesoTest {
     }
 
     @Test
-    void generaAlertasYPriorizaLasRestricciones() {
+    void generaAlertasYPriorizaSoloLosRecursosConDeficit() {
         List<ResultadoRecurso> r = analizador.analizar(
                 new BigDecimal("10000"),
                 List.of(recurso(1, "Empaque", "0.02"),
@@ -32,19 +32,32 @@ class AnalizadorProcesoTest {
         ResultadoRecurso corte = r.get(1);
         ResultadoRecurso ensamblaje = r.get(2);
 
-        // Ensamblaje: 120,19 % de utilización, la más crítica
+        // Ensamblaje: 120,19 % de utilización, sobrecarga. 500 h requeridas vs 416 disponibles
         assertThat(ensamblaje.prioridad()).isEqualTo(1);
         assertThat(ensamblaje.deficitCapacidad()).isEqualByComparingTo("1680");
+        assertThat(ensamblaje.indicadores().deficitHoras()).isEqualByComparingTo("84");
+        assertThat(ensamblaje.indicadores().impacto()).isEqualByComparingTo("16.80");
         assertThat(ensamblaje.alertas())
                 .containsExactly(Alerta.CAPACIDAD_INSUFICIENTE, Alerta.DEFICIT_CAPACIDAD);
 
-        // Corte: 96,15 % de utilización, posible restricción con holgura limitada
-        assertThat(corte.prioridad()).isEqualTo(2);
+        // Corte: 96,15 %, capacidad ajustada con holgura limitada. No tiene déficit, no se prioriza
+        assertThat(corte.prioridad()).isNull();
         assertThat(corte.alertas())
                 .containsExactly(Alerta.ALTA_UTILIZACION, Alerta.CAPACIDAD_LIMITADA);
 
-        // Empaque: 48,08 %, sin restricción y sin prioridad
+        // Empaque: 48,08 %, baja utilización y sin prioridad
         assertThat(empaque.prioridad()).isNull();
         assertThat(empaque.alertas()).containsExactly(Alerta.CAPACIDAD_DISPONIBLE);
+    }
+
+    @Test
+    void entreRecursosConDeficitPriorizaElDeMayorImpacto() {
+        List<ResultadoRecurso> r = analizador.analizar(
+                new BigDecimal("10000"),
+                List.of(recurso(4, "A", "0.05"),    // 500 h requeridas: déficit 84, impacto 16,80 %
+                        recurso(5, "B", "0.06")));  // 600 h requeridas: déficit 184, impacto 30,67 %
+
+        assertThat(r.get(0).prioridad()).isEqualTo(2);
+        assertThat(r.get(1).prioridad()).isEqualTo(1);
     }
 }

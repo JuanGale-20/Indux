@@ -16,6 +16,26 @@ public class AnalisisService implements AnalisisUseCase {
 
     private final CalculadoraIndicadores calculadora = new CalculadoraIndicadores();
 
+    // Prioridad jerárquica (no ponderada):
+    // 1) primero los recursos con déficit de horas
+    // 2) mayor impacto (horas faltantes / horas requeridas)
+    // 3) mayor déficit en horas
+    // 4) mayor utilización
+    // 5) menor holgura
+    private static final Comparator<RecursoAnalizado> PRIORIDAD = (a, b) -> {
+        IndicadoresRecurso x = a.indicadores();
+        IndicadoresRecurso y = b.indicadores();
+        int c = Boolean.compare(y.deficitHoras().signum() > 0, x.deficitHoras().signum() > 0);
+        if (c != 0) return c;
+        c = y.impacto().compareTo(x.impacto());
+        if (c != 0) return c;
+        c = y.deficitHoras().compareTo(x.deficitHoras());
+        if (c != 0) return c;
+        c = y.utilizacion().compareTo(x.utilizacion());
+        if (c != 0) return c;
+        return x.holgura().compareTo(y.holgura());
+    };
+
     @Override
     public ResultadoAnalisis analizar(AnalisisComando c) {
         List<RecursoAnalizado> calculados = new ArrayList<>();
@@ -28,16 +48,12 @@ public class AnalisisService implements AnalisisUseCase {
             } catch (IllegalArgumentException e) {
                 throw new DominioException("Recurso \"" + r.nombre() + "\": " + e.getMessage());
             }
-            // Déficit de capacidad = demanda − capacidad (si es positivo)
+            // Déficit de capacidad (en unidades) = demanda − capacidad (si es positivo)
             BigDecimal deficit = c.demanda().subtract(ind.capacidad()).max(BigDecimal.ZERO);
             calculados.add(new RecursoAnalizado(0, r.nombre(), ind, deficit, alerta(ind)));
         }
 
-        // Prioridad: mayor utilización, luego menor holgura, luego mayor déficit
-        calculados.sort(Comparator
-                .comparing((RecursoAnalizado x) -> x.indicadores().utilizacion()).reversed()
-                .thenComparing(x -> x.indicadores().holgura())
-                .thenComparing(RecursoAnalizado::deficitCapacidad, Comparator.reverseOrder()));
+        calculados.sort(PRIORIDAD);
 
         List<RecursoAnalizado> ordenados = new ArrayList<>();
         for (int i = 0; i < calculados.size(); i++) {
@@ -50,9 +66,10 @@ public class AnalisisService implements AnalisisUseCase {
 
     private String alerta(IndicadoresRecurso ind) {
         return switch (ind.clasificacion()) {
-            case RESTRICCION_CAPACIDAD -> "Restricción de capacidad: la demanda supera la capacidad disponible";
-            case POSIBLE_RESTRICCION -> "Posible restricción: utilización alta, conviene vigilarla";
-            case SIN_RESTRICCION -> "Sin alerta";
+            case SOBRECARGA -> "Alerta crítica: sobrecarga, la demanda supera la capacidad disponible";
+            case CAPACIDAD_AJUSTADA -> "Advertencia: capacidad muy ajustada, poca holgura. Conviene monitorear y prevenir";
+            case UTILIZACION_ADECUADA -> "Utilización adecuada: mantener y monitorear";
+            case BAJA_UTILIZACION -> "Baja utilización: evaluar redistribución o aprovechamiento de capacidad";
         };
     }
 }
