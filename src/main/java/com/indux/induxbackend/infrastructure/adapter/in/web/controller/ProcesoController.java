@@ -28,7 +28,8 @@ public class ProcesoController {
     @PostMapping("/procesos")
     public ResponseEntity<ProcesoResponse> crear(@Valid @RequestBody CrearProcesoRequest r) {
         Proceso creado = procesos.crear(new CrearProcesoComando(
-                r.productoId(), r.liderId(), r.codigo(), r.nombre(), r.secuencia(), r.unidadProcesada()));
+                r.productoId(), r.liderId(), r.codigo(), r.nombre(), r.secuencia(),
+                r.unidadProcesada(), r.merma(), r.unidadEntrada()));
         return ResponseEntity.created(URI.create("/api/procesos/" + creado.id()))
                 .body(ProcesoResponse.desde(creado));
     }
@@ -51,7 +52,8 @@ public class ProcesoController {
     public ProcesoResponse actualizar(@PathVariable Long id,
                                       @Valid @RequestBody ActualizarProcesoRequest r) {
         return ProcesoResponse.desde(procesos.actualizar(id, new ActualizarProcesoComando(
-                r.liderId(), r.codigo(), r.nombre(), r.secuencia(), r.unidadProcesada())));
+                r.liderId(), r.codigo(), r.nombre(), r.secuencia(), r.unidadProcesada(),
+                r.merma(), r.unidadEntrada())));
     }
 
     @DeleteMapping("/procesos/{id}")

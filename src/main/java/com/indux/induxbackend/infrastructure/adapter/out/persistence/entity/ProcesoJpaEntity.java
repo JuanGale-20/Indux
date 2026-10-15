@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "proceso")
 @Getter
@@ -32,4 +34,10 @@ public class ProcesoJpaEntity {
 
     @Column(nullable = false, length = 20)
     private String unidadProcesada;
+
+    @Column(nullable = false, precision = 5, scale = 2)
+    private BigDecimal merma = BigDecimal.ZERO;
+
+    @Column(length = 20)
+    private String unidadEntrada;
 }

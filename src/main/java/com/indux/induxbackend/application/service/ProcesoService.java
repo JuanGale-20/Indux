@@ -29,7 +29,7 @@ public class ProcesoService implements ProcesoUseCase {
     @Override
     public Proceso crear(CrearProcesoComando c) {
         Proceso nuevo = new Proceso(null, c.productoId(), c.liderId(), c.codigo(),
-                c.nombre(), c.secuencia(), c.unidadProcesada());
+                c.nombre(), c.secuencia(), c.unidadProcesada(), c.merma(), c.unidadEntrada());
 
         Producto producto = buscarProducto(nuevo.productoId());
 
@@ -63,8 +63,11 @@ public class ProcesoService implements ProcesoUseCase {
     @Override
     public Proceso actualizar(Long id, ActualizarProcesoComando c) {
         Proceso actual = obtener(id);
+        // Si no se envían merma o unidad de entrada, se conservan las actuales
+        var merma = (c.merma() == null) ? actual.merma() : c.merma();
+        var unidadEntrada = (c.unidadEntrada() == null) ? actual.unidadEntrada() : c.unidadEntrada();
         Proceso nuevo = new Proceso(id, actual.productoId(), c.liderId(), c.codigo(),
-                c.nombre(), c.secuencia(), c.unidadProcesada());
+                c.nombre(), c.secuencia(), c.unidadProcesada(), merma, unidadEntrada);
 
         Producto producto = buscarProducto(actual.productoId());
         validarLider(nuevo.liderId(), producto);

@@ -33,13 +33,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**", "/actuator/health", "/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/empresas", "/api/usuarios").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,
-                                "/api/empresas", "/api/productos", "/api/procesos", "/api/usuarios")
+                                "/api/empresas", "/api/productos", "/api/procesos", "/api/usuarios",
+                                "/api/recursos", "/api/recursos/*/procesos")
                         .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/empresas/**", "/api/productos/**",
-                                "/api/procesos/**", "/api/usuarios/**")
+                                "/api/procesos/**", "/api/usuarios/**", "/api/recursos/**")
                         .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/empresas/**", "/api/productos/**",
-                                "/api/procesos/**", "/api/usuarios/**")
+                                "/api/procesos/**", "/api/usuarios/**", "/api/recursos/**")
                         .hasRole("ADMIN")
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().denyAll())

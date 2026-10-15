@@ -10,7 +10,8 @@ public final class ProcesoMapper {
 
     public static Proceso toDomain(ProcesoJpaEntity e) {
         return new Proceso(e.getId(), e.getProductoId(), e.getLiderId(), e.getCodigo(),
-                e.getNombre(), e.getSecuencia(), e.getUnidadProcesada());
+                e.getNombre(), e.getSecuencia(), e.getUnidadProcesada(),
+                e.getMerma(), e.getUnidadEntrada());
     }
 
     public static ProcesoJpaEntity toEntity(Proceso d) {
@@ -22,6 +23,8 @@ public final class ProcesoMapper {
         e.setNombre(d.nombre());
         e.setSecuencia(d.secuencia());
         e.setUnidadProcesada(d.unidadProcesada());
+        e.setMerma(d.merma());
+        e.setUnidadEntrada(d.unidadEntrada());
         return e;
     }
 }
