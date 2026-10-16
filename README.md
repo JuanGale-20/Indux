@@ -320,3 +320,5 @@ Consulta el archivo `LICENSE` incluido en este repositorio para conocer los tér
 **Indux — En desarrollo.**
 
 Plataforma orientada al análisis de capacidad, la identificación de restricciones operativas y el apoyo a la toma de decisiones empresariales.
+
+**Coder - Juan Camilo Gale Muñoz**
