@@ -223,6 +223,45 @@ En Linux o macOS:
 
 Las pruebas permiten comprobar el comportamiento de los componentes cubiertos por la suite automatizada.
 
+## Base de datos y modelo de datos
+
+Indux cuenta con una base de datos relacional desarrollada en **PostgreSQL 16**, diseñada para organizar la información empresarial, registrar los procesos operativos y almacenar los datos necesarios para analizar la capacidad y detectar posibles restricciones.
+
+El modelo de datos contempla entidades relacionadas con la gestión empresarial, la configuración de procesos, la disponibilidad de recursos, el registro de reportes y el cálculo de indicadores. La estructura se gestiona mediante migraciones versionadas con Flyway.
+
+### Modelo de datos implementado
+
+La base de datos está organizada en las siguientes tablas:
+
+| Área | Tablas |
+|---|---|
+| Gestión empresarial | `empresa`, `usuario` |
+| Productos y procesos | `producto`, `proceso`, `proceso_recurso` |
+| Recursos operativos | `recurso`, `unidad_medida`, `equivalencia_unidad` |
+| Reportes operativos | `reporte`, `reporte_recurso` |
+| Análisis de capacidad | `analisis_recurso` |
+| Validación de información | `validacion_resultado` |
+| Control de migraciones | `flyway_schema_history` |
+
+### Capacidades del modelo
+
+- **Gestión empresarial:** almacenamiento de empresas, usuarios, roles y estados de actividad.
+- **Organización de procesos:** relación entre productos, procesos y recursos utilizados en las operaciones.
+- **Administración de unidades de medida:** definición de unidades y factores de equivalencia para facilitar la consistencia de los datos.
+- **Registro operativo:** almacenamiento de reportes con demanda, producción real, periodos de análisis y parámetros de operación.
+- **Análisis de capacidad:** persistencia de horas requeridas y disponibles, capacidad, utilización, holgura, déficit, clasificación y prioridad.
+- **Validación de datos:** registro de hallazgos asociados a reportes, con su grupo, variable, severidad y mensaje.
+- **Evolución controlada del esquema:** versionamiento de los cambios estructurales mediante migraciones Flyway.
+
+### Integridad y organización de la información
+
+El esquema utiliza identificadores numéricos, columnas obligatorias y opcionales, tipos de datos adecuados para cantidades e indicadores, fechas y marcas temporales. Las relaciones entre entidades permiten organizar la información necesaria para las operaciones de la plataforma.
+
+El diseño también contempla la asociación de productos y recursos con empresas, así como la relación de usuarios con su empresa correspondiente.
+
+**Estado:** el esquema de base de datos forma parte del desarrollo de Indux. La implementación integral de cada funcionalidad que utiliza estas tablas continúa sujeta al avance del backend y de la integración con el frontend.
+
+
 ## Seguridad
 
 Indux incorpora medidas de seguridad en el backend, entre ellas:
