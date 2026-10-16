@@ -1,0 +1,17 @@
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: indux-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: indux
+      POSTGRES_USER: ${INDUX_DB_USERNAME}
+      POSTGRES_PASSWORD: ${INDUX_DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - indux_pgdata:/var/lib/postgresql/data
+
+volumes:
+  indux_pgdata:

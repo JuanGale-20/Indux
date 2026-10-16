@@ -1,0 +1,39 @@
+
+spring:
+  application:
+    name: indux-backend
+
+  datasource:
+    url: ${INDUX_DB_URL:jdbc:postgresql://localhost:5432/indux}
+    username: ${INDUX_DB_USERNAME}
+    password: ${INDUX_DB_PASSWORD}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+
+indux:
+  jwt:
+    secret: ${INDUX_JWT_SECRET}
+    expiracion-minutos: 120
+  cors:
+    origen-permitido: "http://localhost:4200"
+  admin:
+    email: ${INDUX_ADMIN_EMAIL:admin@indux.com}
+    password: ${INDUX_ADMIN_PASSWORD}
