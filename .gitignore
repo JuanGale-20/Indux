@@ -34,3 +34,28 @@ build/
 
 .env
 *.log
+
+# Environment variables and local secrets
+.env.*
+!.env.example
+!.env.template
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Local configuration and credentials
+application-local.yml
+application-local.yaml
+application-local.properties
+credentials.json
+secrets.yml
+secrets.yaml
+
+# OS files
+.DS_Store
+Thumbs.db
