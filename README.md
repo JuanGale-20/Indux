@@ -1,25 +1,178 @@
-# Indux Plataforma — Backend
+# Indux
 
-Indux Plataforma es un software universitario basado en la metodología **SteelForce**, diseñada en colaboración con ingenieros industriales (alineado al objetivo **ODS 9: Industria, Innovación e Infraestructura**). Detecta y analiza **cuellos de botella de capacidad** en plantas de producción: a partir de la demanda de un producto y de los datos operativos de cada recurso (máquina, línea, estación), calcula utilización, holgura, déficit e impacto, clasifica cada recurso, prioriza restricciones, diagnostica causas raíz y recomienda acciones operativas y estratégicas.
+**Plataforma web empresarial para el análisis de capacidad y la detección de cuellos de botella en procesos organizacionales.**
 
----
+![Estado del proyecto](https://img.shields.io/badge/Estado-En%20desarrollo-orange)
+![Java](https://img.shields.io/badge/Java-21-blue)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-6DB33F)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1)
+![Arquitectura](https://img.shields.io/badge/Arquitectura-Hexagonal-purple)
 
-## 1. Stack Tecnológico
+## Acerca del proyecto
 
-- **Lenguaje:** Java 21 (LTS)
-- **Framework:** Spring Boot 4.1.x
-- **Base de Datos:** PostgreSQL 16
-- **Control de Versiones de BD:** Flyway
-- **Seguridad:** Spring Security 6 con autenticación Bearer JWT sin estado
-- **Documentación de API:** SpringDoc OpenAPI 3.x / Swagger UI
-- **Construcción y Dependencias:** Apache Maven (Maven Wrapper incluido)
-- **Procesamiento de Archivos:** Apache POI 5.4.0 (Excel `.xlsx`) y parser CSV nativo con detección automática de delimitador y BOM UTF-8
+**Indux** es una plataforma web empresarial en desarrollo, orientada al monitoreo y análisis de procesos organizacionales. Su objetivo es ayudar a identificar restricciones de capacidad, detectar posibles cuellos de botella y proporcionar indicadores que faciliten la toma de decisiones.
 
----
+La plataforma aplica la metodología **SteelForce**, diseñada con apoyo de ingenieros industriales, para analizar la capacidad operativa de procesos en sectores como manufactura, producción, logística, distribución y actividades administrativas repetitivas.
 
-## 2. Variables de Entorno
+El proyecto busca contribuir al **Objetivo de Desarrollo Sostenible 9 (ODS 9)**: Industria, innovación e infraestructura.
 
-Las credenciales y secretos nunca deben escribirse en el código. Configúralos en tu entorno o mediante un archivo `.env` local (basado en [.env.example](file:///C:/Users/juang/OneDrive/Documentos/SEMESTRES%20ING%20SISTEMAS/Proyecto/Indux/Indux/.env.example)):
+> **Estado actual:** Indux se encuentra en desarrollo activo. El backend cuenta con funcionalidades implementadas y pruebas automatizadas. El frontend y otras capacidades de la plataforma se desarrollarán e integrarán progresivamente. Las funcionalidades descritas como planificadas todavía no deben considerarse terminadas.
+
+## Objetivos
+
+- Calcular las horas requeridas y disponibles de los procesos.
+- Medir la utilización de la capacidad y la holgura operativa.
+- Clasificar los procesos según su nivel de utilización.
+- Identificar y priorizar procesos que puedan presentar restricciones.
+- Proporcionar información que apoye las decisiones operativas.
+- Incorporar progresivamente herramientas de análisis y recomendaciones asistidas por inteligencia artificial.
+
+## Funcionalidades
+
+### Implementadas en el backend
+
+- Autenticación de usuarios mediante JWT.
+- Control de acceso basado en roles: `ADMIN`, `LIDER` y `ANALISTA`.
+- Gestión de empresas y usuarios.
+- Gestión de productos y procesos.
+- Validación de datos de empresas, productos y procesos según la fase 2 de SteelForce.
+- Distinción entre errores críticos y advertencias de validación.
+- Cálculo de indicadores de capacidad, utilización y holgura.
+- Aislamiento de información por empresa.
+- Migraciones de base de datos mediante Flyway.
+- Pruebas automatizadas del dominio, los servicios, la persistencia y la API.
+
+### En desarrollo o planificadas
+
+- Frontend web con Angular y Tailwind CSS.
+- Integración completa entre el frontend y la API REST.
+- Gestión de recursos compartidos.
+- Reportes operativos e históricos.
+- Visualización de tendencias.
+- Recomendaciones para apoyar la mejora de los procesos.
+- Asistente de inteligencia artificial para explicar resultados y ofrecer recomendaciones.
+
+Las funcionalidades se incorporarán progresivamente a medida que avance el desarrollo.
+
+## Metodología de análisis
+
+Indux calcula indicadores de capacidad para ayudar a interpretar la carga operativa de cada proceso.
+
+Entre los indicadores contemplados se encuentran:
+
+- **Horas requeridas:** estimación del tiempo necesario para atender la demanda.
+- **Horas disponibles:** capacidad temporal disponible según los parámetros operativos.
+- **Utilización:** relación entre las horas requeridas y las horas disponibles.
+- **Holgura:** capacidad que permanece disponible después de atender la demanda.
+
+La clasificación de procesos utiliza los siguientes umbrales provisionales:
+
+| Clasificación | Utilización |
+|---|---:|
+| `SIN_RESTRICCION` | Menor al 80 % |
+| `POSIBLE_RESTRICCION` | Desde el 80 % hasta el 100 % |
+| `RESTRICCION_CAPACIDAD` | Mayor al 100 % |
+
+Los parámetros operativos están sujetos a revisión y validación por parte de los ingenieros industriales responsables de la metodología.
+
+## Arquitectura
+
+El backend utiliza una arquitectura hexagonal basada en puertos y adaptadores, organizada en tres capas principales:
+
+```text
+Indux Backend
+├── domain
+│   ├── model
+│   ├── service
+│   ├── validacion
+│   └── exception
+│
+├── application
+│   ├── port
+│   │   ├── in
+│   │   └── out
+│   └── service
+│
+└── infrastructure
+    ├── adapter
+    │   ├── in
+    │   │   └── web
+    │   └── out
+    │       └── persistence
+    ├── security
+    └── config
+```
+
+La separación de responsabilidades permite mantener las reglas del negocio independientes de los detalles de infraestructura y facilita las pruebas, el mantenimiento y la evolución del sistema.
+
+La arquitectura general contempla un frontend desacoplado que consumirá una API REST sin estado.
+
+## Tecnologías
+
+### Backend
+
+- Java 21
+- Spring Boot
+- Spring Web
+- Spring Data JPA e Hibernate
+- Spring Security
+- JWT mediante JJWT
+- BCrypt para el almacenamiento seguro de contraseñas
+- Bean Validation
+- Spring Boot Actuator
+- Lombok
+- Maven
+
+### Base de datos e infraestructura
+
+- PostgreSQL 16
+- Docker y Docker Compose
+- Flyway para las migraciones de base de datos
+
+### Frontend previsto
+
+- Angular
+- TypeScript
+- Tailwind CSS
+- Componentes standalone
+- Signals
+- Rutas lazy loading
+- Guards e interceptores funcionales
+- Formularios reactivos
+
+**Nota:** las tecnologías del frontend corresponden a la arquitectura prevista y no implican que su integración esté terminada.
+
+## Requisitos del entorno de desarrollo
+
+- JDK 21.
+- Docker Desktop con Docker Compose, o una instalación compatible de PostgreSQL 16.
+- Git.
+- Conexión de red.
+- Maven Wrapper, incluido en el repositorio.
+
+Para desarrollar el frontend posteriormente también será necesario instalar Node.js y las herramientas correspondientes de Angular.
+
+## Instalación y ejecución del backend
+
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/JuanGale-20/Indux.git
+cd Indux
+```
+
+### 2. Configurar las variables de entorno
+
+Crea un archivo `.env` en la raíz del proyecto tomando como base `.env.example`:
+
+En Windows (PowerShell):
+```powershell
+Copy-Item .env.example .env
+```
+En Linux / macOS:
+```bash
+cp .env.example .env
+```
 
 | Variable | Descripción | Valor por defecto / Ejemplo |
 |---|---|---|
@@ -32,74 +185,65 @@ Las credenciales y secretos nunca deben escribirse en el código. Configúralos 
 | `INDUX_CORS_ORIGEN` | Origen permitido para CORS (frontend) | `http://localhost:4200` |
 | `SWAGGER_ENABLED` | Activar o desactivar OpenAPI y Swagger UI | `true` |
 
----
 
-## 3. Puesta en Marcha de la Base de Datos
+### 3. Iniciar PostgreSQL
 
-### Opción A: Docker
-
-Ejecuta el siguiente comando para levantar un contenedor de PostgreSQL 16 en el puerto 5432:
+Con las variables necesarias configuradas, ejecuta:
 
 ```bash
-docker run -d \
-  --name indux-postgres \
-  -e POSTGRES_DB=indux \
-  -e POSTGRES_USER=indux_user \
-  -e POSTGRES_PASSWORD=indux_pass \
-  -p 5432:5432 \
-  postgres:16-alpine
+docker compose up -d
 ```
 
-### Opción B: WSL / Linux Nativo
+Este comando inicia el servicio PostgreSQL definido en `docker-compose.yml`.
 
-```bash
-sudo service postgresql start
-sudo -u postgres psql -c "CREATE USER indux_user WITH PASSWORD 'indux_pass';"
-sudo -u postgres psql -c "CREATE DATABASE indux OWNER indux_user;"
+### 4. Ejecutar el backend
+
+En Windows:
+
+```powershell
+.\start-server.ps1
+# O mediante CMD:
+start.bat
+# O directamente con Maven:
+.\mvnw.cmd spring-boot:run
 ```
 
----
-
-## 4. Ejecución de Tests
-
-Asegúrate de que PostgreSQL esté activo en `localhost:5432` y ejecuta:
-
-### En Windows (PowerShell / CMD):
-
-```cmd
-set INDUX_DB_URL=jdbc:postgresql://localhost:5432/indux
-set INDUX_DB_USERNAME=indux_user
-set INDUX_DB_PASSWORD=indux_pass
-set INDUX_JWT_SECRET=/zK8g7pwYlb7fM1JVbgstRmuISrgXKcmel6Mn7uQCBY=
-set INDUX_ADMIN_PASSWORD=reemplaza_por_una_clave_segura
-.\mvnw.cmd test
-```
-
-### En Linux / macOS:
-
-```bash
-export INDUX_DB_URL="jdbc:postgresql://localhost:5432/indux"
-export INDUX_DB_USERNAME="indux_user"
-export INDUX_DB_PASSWORD="indux_pass"
-export INDUX_JWT_SECRET="/zK8g7pwYlb7fM1JVbgstRmuISrgXKcmel6Mn7uQCBY="
-export INDUX_ADMIN_PASSWORD="reemplaza_por_una_clave_segura"
-./mvnw test
-```
-
----
-
-## 5. Ejecución del Servidor
+En Linux o macOS:
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
+La API estará disponible en `http://localhost:8080`, siempre que el inicio finalice correctamente y no se haya modificado su configuración.
+
+### 5. Ejecutar las pruebas
+
 En Windows:
-```cmd
-.\mvnw.cmd spring-boot:run
+
+```powershell
+.\run-tests.ps1
+# O con Maven directamente:
+.\mvnw.cmd test
 ```
 
-El servidor iniciará en `http://localhost:8080`.
+En Linux o macOS:
+
+```bash
+./mvnw test
+```
+
+Las pruebas permiten comprobar el comportamiento de los componentes cubiertos por la suite automatizada.
+
+
+#### Pruebas de integración con Newman / Postman
+
+Puedes ejecutar la suite completa de 61 peticiones y 105 aserciones desde la terminal:
+
+```bash
+npx newman run Indux_Plataforma_Postman_Collection.json
+```
+O importando el archivo `Indux_Plataforma_Postman_Collection.json` en Postman con el **Collection Runner**.
+
 
 ---
 
@@ -112,14 +256,6 @@ Cuando la aplicación esté en ejecución y `SWAGGER_ENABLED=true`:
 Desde la interfaz web de Swagger UI puedes usar el botón **Authorize** para introducir el token JWT obtenido en el login (`Bearer <token>`).
 
 ---
-
-## 7. Roles y Control de Acceso
-
-| Rol | Descripción | Permisos Clave |
-|---|---|---|
-| `ADMIN` | Administrador de la plataforma (sin empresa asignada). | Acceso total a todas las empresas, gestión de usuarios, productos, procesos, recursos, reportes e importaciones. |
-| `ANALISTA` | Analista de planta asignado a una empresa. | Creación, actualización, importación, validación y análisis de reportes de su empresa. Solo lectura de catálogos de su empresa. |
-| `LIDER` | Líder de proceso de una empresa. | Perfil de solo consulta. En las consultas de reportes y análisis, únicamente visualiza las líneas y recursos de los procesos asignados a su cargo. |
 
 ---
 
@@ -207,9 +343,121 @@ Desde la interfaz web de Swagger UI puedes usar el botón **Authorize** para int
 
 ---
 
+---
+
+## Base de datos y modelo de datos
+
+Indux cuenta con una base de datos relacional desarrollada en **PostgreSQL 16**, diseñada para organizar la información empresarial, registrar los procesos operativos y almacenar los datos necesarios para analizar la capacidad y detectar posibles restricciones.
+
+El modelo de datos contempla entidades relacionadas con la gestión empresarial, la configuración de procesos, la disponibilidad de recursos, el registro de reportes y el cálculo de indicadores. La estructura se gestiona mediante migraciones versionadas con Flyway.
+
+### Modelo de datos implementado
+
+La base de datos está organizada en las siguientes tablas:
+
+| Área | Tablas |
+|---|---|
+| Gestión empresarial | `empresa`, `usuario` |
+| Productos y procesos | `producto`, `proceso`, `proceso_recurso` |
+| Recursos operativos | `recurso`, `unidad_medida`, `equivalencia_unidad` |
+| Reportes operativos | `reporte`, `reporte_recurso` |
+| Análisis de capacidad | `analisis_recurso` |
+| Validación de información | `validacion_resultado` |
+| Control de migraciones | `flyway_schema_history` |
+
+### Capacidades del modelo
+
+- **Gestión empresarial:** almacenamiento de empresas, usuarios, roles y estados de actividad.
+- **Organización de procesos:** relación entre productos, procesos y recursos utilizados en las operaciones.
+- **Administración de unidades de medida:** definición de unidades y factores de equivalencia para facilitar la consistencia de los datos.
+- **Registro operativo:** almacenamiento de reportes con demanda, producción real, periodos de análisis y parámetros de operación.
+- **Análisis de capacidad:** persistencia de horas requeridas y disponibles, capacidad, utilización, holgura, déficit, clasificación y prioridad.
+- **Validación de datos:** registro de hallazgos asociados a reportes, con su grupo, variable, severidad y mensaje.
+- **Evolución controlada del esquema:** versionamiento de los cambios estructurales mediante migraciones Flyway.
+
+### Integridad y organización de la información
+
+El esquema utiliza identificadores numéricos, columnas obligatorias y opcionales, tipos de datos adecuados para cantidades e indicadores, fechas y marcas temporales. Las relaciones entre entidades permiten organizar la información necesaria para las operaciones de la plataforma.
+
+El diseño también contempla la asociación de productos y recursos con empresas, así como la relación de usuarios con su empresa correspondiente.
+
+**Estado:** el esquema de base de datos forma parte del desarrollo de Indux. La implementación integral de cada funcionalidad que utiliza estas tablas continúa sujeta al avance del backend y de la integración con el frontend.
+
+
+## Seguridad
+
+Indux incorpora medidas de seguridad en el backend, entre ellas:
+
+- Autenticación basada en JWT.
+- Contraseñas protegidas mediante BCrypt.
+- Autorización basada en roles.
+- Separación de la información por empresa.
+- Configuración de credenciales mediante variables de entorno.
+- Restricción de CORS al origen configurado para el frontend.
+- Manejo uniforme de errores de la API.
+
+Estas medidas forman parte de la implementación actual y continúan sujetas a validación conforme evolucione el proyecto.
+
+Antes de un despliegue productivo se deben revisar, entre otros aspectos, HTTPS, gestión de secretos, permisos, políticas de acceso, copias de seguridad y configuración del servidor.
+
+---
+
+## Perfiles de usuario y control de acceso
+
+La plataforma contempla tres roles principales:
+
+- **Administrador (`ADMIN`):** administra empresas y usuarios y supervisa la configuración global de la plataforma.
+- **Líder de proceso (`LIDER`):** consulta los indicadores, análisis y alertas correspondientes a los procesos bajo su responsabilidad.
+- **Analista (`ANALISTA`):** gestiona productos, procesos, recursos y genera reportes de producción con validación y análisis cuantitativo de capacidad.
+
+### Matriz de permisos
+
+| Rol | Descripción | Permisos Clave |
+|
+
+
+---
+
 ## 9. Parámetros de Dominio a Confirmar con Ingenieras Industriales
 
 Los siguientes valores se encuentran centralizados como constantes de dominio debidamente documentadas:
 
 1. `DetectorCausas.UMBRAL_TIEMPO = 1.10`: Umbral del 10 % sobre el tiempo de referencia para considerar que el tiempo de procesamiento es causa de déficit.
 2. `CalculadoraTendencia.UMBRAL_PUNTOS = 5.00`: Umbral de 5 puntos porcentuales de utilización para clasificar la tendencia en `CRECIENTE` o `DECRECIENTE`.
+
+---
+
+## Clientes objetivo
+
+Indux está orientado a organizaciones que necesitan mejorar la visibilidad de su capacidad operativa, especialmente en:
+
+- Manufactura y producción.
+- Logística y distribución.
+- Operaciones industriales.
+- Procesos administrativos repetitivos.
+
+La plataforma busca ofrecer información estructurada para apoyar el análisis de procesos y la identificación de oportunidades de mejora.
+
+## Consideraciones legales
+
+El tratamiento de datos personales y el uso del software deben evaluarse de acuerdo con la normativa aplicable en Colombia, incluidas las disposiciones pertinentes sobre protección de datos personales y derechos de autor.
+
+Las referencias normativas del proyecto deben verificarse antes de un despliegue institucional o comercial.
+
+## Contribuciones
+
+Durante la etapa de desarrollo, las mejoras, correcciones y nuevas funcionalidades deben mantener la separación de responsabilidades de la arquitectura, las convenciones de código y las pruebas automatizadas.
+
+Antes de enviar cambios, se recomienda ejecutar la suite de pruebas y comprobar que no se incluyan credenciales, claves o información confidencial.
+
+## Licencia
+
+Consulta el archivo `LICENSE` incluido en este repositorio para conocer los términos de uso y distribución aplicables.
+
+---
+
+**Indux — En desarrollo.**
+
+Plataforma orientada al análisis de capacidad, la identificación de restricciones operativas y el apoyo a la toma de decisiones empresariales.
+
+**Coder - Juan Camilo Gale Muñoz**
