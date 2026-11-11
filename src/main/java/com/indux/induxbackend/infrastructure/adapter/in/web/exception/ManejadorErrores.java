@@ -1,18 +1,23 @@
 package com.indux.induxbackend.infrastructure.adapter.in.web.exception;
 
 import com.indux.induxbackend.domain.exception.ConflictoException;
+import com.indux.induxbackend.domain.exception.CredencialesInvalidasException;
 import com.indux.induxbackend.domain.exception.DominioException;
 import com.indux.induxbackend.domain.exception.NoEncontradoException;
+import com.indux.induxbackend.domain.exception.SinPermisoException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import com.indux.induxbackend.domain.exception.CredencialesInvalidasException;
-import com.indux.induxbackend.domain.exception.SinPermisoException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -51,13 +56,36 @@ public class ManejadorErrores {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ProblemDetail> jsonIlegible(HttpMessageNotReadableException ex) {
-        return respuesta(HttpStatus.BAD_REQUEST, "Cuerpo ilegible", "El JSON enviado no tiene un formato válido");
+        return respuesta(HttpStatus.BAD_REQUEST, "Cuerpo ilegible",
+                "El JSON enviado no tiene un formato válido o tiene valores no permitidos");
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ProblemDetail> inesperado(Exception ex) {
-        log.error("Error inesperado", ex);
-        return respuesta(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno", "Ocurrió un error inesperado");
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ProblemDetail> parametroInvalido(MethodArgumentTypeMismatchException ex) {
+        return respuesta(HttpStatus.BAD_REQUEST, "Parámetro inválido",
+                "El valor '" + ex.getValue() + "' no es válido para '" + ex.getName() + "'");
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ProblemDetail> parametroFaltante(MissingServletRequestParameterException ex) {
+        return respuesta(HttpStatus.BAD_REQUEST, "Parámetro faltante",
+                "Falta el parámetro '" + ex.getParameterName() + "'");
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ProblemDetail> metodoNoPermitido(HttpRequestMethodNotSupportedException ex) {
+        return respuesta(HttpStatus.METHOD_NOT_ALLOWED, "Método no permitido", ex.getMessage());
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ProblemDetail> rutaInexistente(NoResourceFoundException ex) {
+        return respuesta(HttpStatus.NOT_FOUND, "Ruta no encontrada", "Esa ruta no existe");
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ProblemDetail> archivoMuyGrande(MaxUploadSizeExceededException ex) {
+        return respuesta(HttpStatus.BAD_REQUEST, "Archivo demasiado grande",
+                "El archivo subido supera el tamaño máximo permitido (5 MB)");
     }
 
     @ExceptionHandler(CredencialesInvalidasException.class)
@@ -68,6 +96,12 @@ public class ManejadorErrores {
     @ExceptionHandler(SinPermisoException.class)
     public ResponseEntity<ProblemDetail> sinPermiso(SinPermisoException ex) {
         return respuesta(HttpStatus.FORBIDDEN, "Sin permiso", ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ProblemDetail> inesperado(Exception ex) {
+        log.error("Error inesperado", ex);
+        return respuesta(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno", "Ocurrió un error inesperado");
     }
 
     private ResponseEntity<ProblemDetail> respuesta(HttpStatus estado, String titulo, String detalle) {

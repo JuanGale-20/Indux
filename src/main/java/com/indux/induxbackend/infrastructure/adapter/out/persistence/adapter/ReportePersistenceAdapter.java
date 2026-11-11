@@ -2,6 +2,7 @@ package com.indux.induxbackend.infrastructure.adapter.out.persistence.adapter;
 
 import com.indux.induxbackend.application.port.out.ReporteRepositoryPort;
 import com.indux.induxbackend.domain.exception.ConflictoException;
+import com.indux.induxbackend.domain.model.FrecuenciaReporte;
 import com.indux.induxbackend.domain.model.Reporte;
 import com.indux.induxbackend.infrastructure.adapter.out.persistence.mapper.ReporteMapper;
 import com.indux.induxbackend.infrastructure.adapter.out.persistence.repository.ReporteJpaRepository;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +39,14 @@ public class ReportePersistenceAdapter implements ReporteRepositoryPort {
     @Override
     public List<Reporte> listarPorEmpresa(Long empresaId) {
         return repository.findByEmpresaId(empresaId).stream().map(ReporteMapper::toDomain).toList();
+    }
+
+    @Override
+    public List<Reporte> buscarCandidatosRecursoCompartido(Long empresaId, Long productoIdExcluir,
+                                                           FrecuenciaReporte frecuencia,
+                                                           LocalDate inicio, LocalDate fin) {
+        return repository.buscarCandidatosRecursoCompartido(empresaId, productoIdExcluir, frecuencia, inicio, fin)
+                .stream().map(ReporteMapper::toDomain).toList();
     }
 
     @Override

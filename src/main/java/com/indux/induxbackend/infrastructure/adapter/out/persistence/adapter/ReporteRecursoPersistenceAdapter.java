@@ -30,5 +30,6 @@ public class ReporteRecursoPersistenceAdapter implements ReporteRecursoRepositor
     @Transactional
     public void eliminarPorReporte(Long reporteId) {
         repository.deleteByReporteId(reporteId);
+        repository.flush();
     }
 }

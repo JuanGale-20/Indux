@@ -6,6 +6,8 @@ import com.indux.induxbackend.application.port.in.AutenticacionUseCase.SesionIni
 import com.indux.induxbackend.infrastructure.adapter.in.web.dto.LoginRequest;
 import com.indux.induxbackend.infrastructure.adapter.in.web.dto.LoginResponse;
 import com.indux.induxbackend.infrastructure.adapter.in.web.dto.UsuarioResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,10 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Autenticación", description = "Endpoints de autenticación y acceso")
 public class AuthController {
 
     private final AutenticacionUseCase autenticacion;
 
+    @Operation(summary = "Iniciar sesión con correo y contraseña")
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         SesionIniciada sesion = autenticacion.iniciarSesion(

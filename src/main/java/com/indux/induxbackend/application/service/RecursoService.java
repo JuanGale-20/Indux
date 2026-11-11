@@ -1,6 +1,7 @@
 package com.indux.induxbackend.application.service;
 
 import com.indux.induxbackend.application.port.in.RecursoUseCase;
+import com.indux.induxbackend.application.port.out.AnalisisRepositoryPort;
 import com.indux.induxbackend.application.port.out.EmpresaRepositoryPort;
 import com.indux.induxbackend.application.port.out.ProcesoRecursoRepositoryPort;
 import com.indux.induxbackend.application.port.out.ProcesoRepositoryPort;
@@ -9,18 +10,20 @@ import com.indux.induxbackend.application.port.out.RecursoRepositoryPort;
 import com.indux.induxbackend.domain.exception.ConflictoException;
 import com.indux.induxbackend.domain.exception.DominioException;
 import com.indux.induxbackend.domain.exception.NoEncontradoException;
+import com.indux.induxbackend.domain.model.HistoricoRecurso;
 import com.indux.induxbackend.domain.model.Proceso;
 import com.indux.induxbackend.domain.model.ProcesoRecurso;
 import com.indux.induxbackend.domain.model.Producto;
+import com.indux.induxbackend.domain.model.PuntoHistoricoRecurso;
 import com.indux.induxbackend.domain.model.Recurso;
-import lombok.RequiredArgsConstructor;
+import com.indux.induxbackend.domain.service.CalculadoraTendencia;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class RecursoService implements RecursoUseCase {
 
@@ -29,6 +32,27 @@ public class RecursoService implements RecursoUseCase {
     private final ProcesoRecursoRepositoryPort vinculos;
     private final ProcesoRepositoryPort procesos;
     private final ProductoRepositoryPort productos;
+    private final AnalisisRepositoryPort analisisRepo;
+
+    private final CalculadoraTendencia calculadoraTendencia = new CalculadoraTendencia();
+
+    public RecursoService(RecursoRepositoryPort recursos, EmpresaRepositoryPort empresas,
+                          ProcesoRecursoRepositoryPort vinculos, ProcesoRepositoryPort procesos,
+                          ProductoRepositoryPort productos) {
+        this(recursos, empresas, vinculos, procesos, productos, null);
+    }
+
+    @Autowired
+    public RecursoService(RecursoRepositoryPort recursos, EmpresaRepositoryPort empresas,
+                          ProcesoRecursoRepositoryPort vinculos, ProcesoRepositoryPort procesos,
+                          ProductoRepositoryPort productos, AnalisisRepositoryPort analisisRepo) {
+        this.recursos = recursos;
+        this.empresas = empresas;
+        this.vinculos = vinculos;
+        this.procesos = procesos;
+        this.productos = productos;
+        this.analisisRepo = analisisRepo;
+    }
 
     @Override
     public Recurso crear(CrearRecursoComando c) {
@@ -117,6 +141,17 @@ public class RecursoService implements RecursoUseCase {
     public List<ProcesoRecurso> listarVinculos(Long recursoId) {
         obtener(recursoId);
         return vinculos.listarPorRecurso(recursoId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public HistoricoRecurso obtenerHistorico(Long recursoId, int limite) {
+        Recurso recurso = obtener(recursoId);
+        int limiteEfectivo = Math.clamp(limite, 1, 60);
+        List<PuntoHistoricoRecurso> puntos = (analisisRepo != null)
+                ? analisisRepo.listarHistoricoPorRecurso(recursoId, limiteEfectivo)
+                : List.of();
+        return calculadoraTendencia.calcular(recursoId, recurso.codigo(), recurso.nombre(), puntos);
     }
 
     private Proceso buscarProceso(Long procesoId) {

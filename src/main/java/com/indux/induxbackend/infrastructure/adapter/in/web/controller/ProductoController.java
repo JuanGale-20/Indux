@@ -8,6 +8,8 @@ import com.indux.induxbackend.infrastructure.adapter.in.web.dto.ActualizarProduc
 import com.indux.induxbackend.infrastructure.adapter.in.web.dto.CrearProductoRequest;
 import com.indux.induxbackend.infrastructure.adapter.in.web.dto.ProductoResponse;
 import com.indux.induxbackend.infrastructure.security.AccesoPorEmpresa;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +22,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/productos")
 @RequiredArgsConstructor
+@Tag(name = "Productos", description = "Gestión de productos y catálogo")
 public class ProductoController {
 
     private final ProductoUseCase productos;
     private final AccesoPorEmpresa acceso;
 
+    @Operation(summary = "Crear un nuevo producto (ADMIN)")
     @PostMapping
     public ResponseEntity<ProductoResponse> crear(@Valid @RequestBody CrearProductoRequest r) {
         Producto creado = productos.crear(
@@ -33,11 +37,13 @@ public class ProductoController {
                 .body(ProductoResponse.desde(creado));
     }
 
+    @Operation(summary = "Obtener un producto por ID")
     @GetMapping("/{id}")
     public ProductoResponse obtener(@PathVariable Long id, Authentication autenticacion) {
         return ProductoResponse.desde(acceso.producto(autenticacion, id));
     }
 
+    @Operation(summary = "Listar productos de una empresa")
     @GetMapping
     public List<ProductoResponse> listarPorEmpresa(@RequestParam Long empresaId,
                                                    Authentication autenticacion) {
@@ -45,6 +51,7 @@ public class ProductoController {
         return productos.listarPorEmpresa(empresaId).stream().map(ProductoResponse::desde).toList();
     }
 
+    @Operation(summary = "Actualizar datos de un producto (ADMIN)")
     @PutMapping("/{id}")
     public ProductoResponse actualizar(@PathVariable Long id,
                                        @Valid @RequestBody ActualizarProductoRequest r) {
@@ -52,6 +59,7 @@ public class ProductoController {
                 new ActualizarProductoComando(r.codigo(), r.nombre(), r.unidadMedida())));
     }
 
+    @Operation(summary = "Eliminar un producto (ADMIN)")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         productos.eliminar(id);

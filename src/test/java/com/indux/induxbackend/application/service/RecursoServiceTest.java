@@ -2,6 +2,7 @@ package com.indux.induxbackend.application.service;
 
 import com.indux.induxbackend.application.port.in.RecursoUseCase.CrearRecursoComando;
 import com.indux.induxbackend.application.port.in.RecursoUseCase.VincularProcesoComando;
+import com.indux.induxbackend.application.port.out.AnalisisRepositoryPort;
 import com.indux.induxbackend.application.port.out.EmpresaRepositoryPort;
 import com.indux.induxbackend.application.port.out.ProcesoRecursoRepositoryPort;
 import com.indux.induxbackend.application.port.out.ProcesoRepositoryPort;
@@ -9,13 +10,16 @@ import com.indux.induxbackend.application.port.out.ProductoRepositoryPort;
 import com.indux.induxbackend.application.port.out.RecursoRepositoryPort;
 import com.indux.induxbackend.domain.exception.ConflictoException;
 import com.indux.induxbackend.domain.exception.DominioException;
+import com.indux.induxbackend.domain.model.DireccionTendencia;
 import com.indux.induxbackend.domain.model.Empresa;
+import com.indux.induxbackend.domain.model.HistoricoRecurso;
 import com.indux.induxbackend.domain.model.Proceso;
 import com.indux.induxbackend.domain.model.ProcesoRecurso;
 import com.indux.induxbackend.domain.model.Producto;
 import com.indux.induxbackend.domain.model.Recurso;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,5 +86,21 @@ class RecursoServiceTest {
 
         assertThatThrownBy(() -> servicio.vincular(3L, new VincularProcesoComando(7L, null)))
                 .isInstanceOf(ConflictoException.class);
+    }
+
+    @Test
+    void obtenerHistoricoRecurso() {
+        AnalisisRepositoryPort analisisRepo = mock(AnalisisRepositoryPort.class);
+        RecursoService servicioConAnalisis = new RecursoService(recursos, empresas, vinculos, procesos, productos, analisisRepo);
+
+        when(recursos.buscarPorId(3L))
+                .thenReturn(Optional.of(new Recurso(3L, 1L, "M1", "Torno", null, 1, null)));
+        when(analisisRepo.listarHistoricoPorRecurso(3L, 12)).thenReturn(List.of());
+
+        HistoricoRecurso historico = servicioConAnalisis.obtenerHistorico(3L, 12);
+
+        assertThat(historico.recursoId()).isEqualTo(3L);
+        assertThat(historico.codigo()).isEqualTo("M1");
+        assertThat(historico.tendencia().direccion()).isEqualTo(DireccionTendencia.SIN_DATOS_SUFICIENTES);
     }
 }

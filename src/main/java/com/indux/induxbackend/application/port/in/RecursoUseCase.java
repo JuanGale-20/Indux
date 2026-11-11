@@ -1,6 +1,7 @@
 package com.indux.induxbackend.application.port.in;
 
 import com.indux.induxbackend.domain.model.EstadoRecurso;
+import com.indux.induxbackend.domain.model.HistoricoRecurso;
 import com.indux.induxbackend.domain.model.ProcesoRecurso;
 import com.indux.induxbackend.domain.model.Recurso;
 
@@ -26,6 +27,8 @@ public interface RecursoUseCase {
     void desvincular(Long recursoId, Long procesoId);
 
     List<ProcesoRecurso> listarVinculos(Long recursoId);
+
+    HistoricoRecurso obtenerHistorico(Long recursoId, int limite);
 
     record CrearRecursoComando(Long empresaId, String codigo, String nombre, String tipo,
                                int cantidadDisponible, EstadoRecurso estado) {

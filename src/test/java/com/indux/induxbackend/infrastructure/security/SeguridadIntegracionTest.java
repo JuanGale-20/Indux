@@ -6,6 +6,7 @@ import com.indux.induxbackend.application.port.in.UsuarioUseCase;
 import com.indux.induxbackend.application.port.in.UsuarioUseCase.RegistrarUsuarioComando;
 import com.indux.induxbackend.domain.model.Empresa;
 import com.indux.induxbackend.domain.model.Rol;
+import com.indux.induxbackend.domain.model.Usuario;
 import com.jayway.jsonpath.JsonPath;
 import jakarta.servlet.Filter;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -36,6 +38,8 @@ class SeguridadIntegracionTest {
     UsuarioUseCase usuarios;
     @Autowired
     EmpresaUseCase empresas;
+    @Autowired
+    VerificadorUsuarioActivo verificadorUsuarioActivo;
 
     MockMvc mvc;
 
@@ -115,6 +119,42 @@ class SeguridadIntegracionTest {
         mvc.perform(get("/api/empresas/" + propia.id()).header("Authorization", bearer(token)))
                 .andExpect(status().isOk());
         mvc.perform(get("/api/empresas/" + ajena.id()).header("Authorization", bearer(token)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void usuarioDesactivadoPierdeAccesoInmediatamenteDevuelve401() throws Exception {
+        Empresa empresa = empresas.crear(new CrearEmpresaComando("Aceros", "Manufactura"));
+        Usuario user = usuarios.registrar(new RegistrarUsuarioComando(
+                empresa.id(), "Desactivado", "it-desactivado@indux.test", "secreto123", Rol.ANALISTA));
+        String token = token("it-desactivado@indux.test", "secreto123");
+
+        // Activo -> 200
+        mvc.perform(get("/api/empresas/" + empresa.id()).header("Authorization", bearer(token)))
+                .andExpect(status().isOk());
+
+        // Desactivar usuario
+        usuarios.desactivar(user.id());
+        verificadorUsuarioActivo.invalidar(user.id());
+
+        // Inmediatamente -> 401
+        mvc.perform(get("/api/empresas/" + empresa.id()).header("Authorization", bearer(token)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(result -> assertThat(result.getResponse().getContentAsString())
+                        .contains("Tu usuario o tu empresa fue desactivado"));
+    }
+
+    @Test
+    void liderNoPuedeCrearReportesDevuelve403() throws Exception {
+        Empresa empresa = empresas.crear(new CrearEmpresaComando("Aceros", "Manufactura"));
+        usuarios.registrar(new RegistrarUsuarioComando(
+                empresa.id(), "Lider", "it-lider@indux.test", "secreto123", Rol.LIDER));
+        String token = token("it-lider@indux.test", "secreto123");
+
+        mvc.perform(post("/api/reportes")
+                        .header("Authorization", bearer(token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"productoId\":1,\"plantaArea\":\"Planta\",\"frecuencia\":\"MENSUAL\",\"periodoInicio\":\"2026-01-01\",\"periodoFin\":\"2026-01-31\",\"demanda\":1000,\"produccionReal\":900,\"lineas\":[]}"))
                 .andExpect(status().isForbidden());
     }
 }

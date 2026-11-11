@@ -1,0 +1,3001 @@
+{
+  "info": {
+    "_postman_id": "c1f7b8e3-824a-4d2a-bc91-1de0a71a0001",
+    "name": "Indux Plataforma - API Completa (SteelForce)",
+    "description": "Colección completa de pruebas para todos los módulos de Indux Plataforma:\n\n1. **Autenticación y Roles:** Login por rol (ADMIN, ANALISTA, LIDER) guardando tokens en variables de colección.\n2. **Catálogos y Entidades:** CRUD de Empresas, Usuarios, Productos, Procesos con merma y Recursos.\n3. **Vínculos Proceso-Recurso:** Tiempos de referencia por proceso.\n4. **Reportes:** Creación de reportes con líneas, actualización a BORRADOR, filtrado de líneas para rol LIDER.\n5. **Validación y Análisis Persistido:** Detección de errores críticos vs advertencias, análisis persistido, control numérico de recurso compartido (360h requeridas, 112.5% utilización, SOBRECARGA, prioridad 1).\n6. **Recomendaciones y Causas:** Planes de acción por nivel de severidad y desglose cuantitativo de factores causantes.\n7. **Histórico y Tendencia:** Consulta de puntos depurados y tendencia de utilización.\n8. **Importación:** Plantillas y endpoints multipart para Excel y CSV.\n9. **Análisis al Vuelo:** Endpoint de cálculo instantáneo.\n10. **Casos Negativos y Seguridad:** Pruebas 403 (LIDER creando reporte), 422 (análisis con error crítico), 409 (reporte no analizado), 400 (JSON/enum inválido y parámetro inválido) y 401 (usuario desactivado).\n\nDiseñada para ejecutarse de principio a fin con el **Collection Runner** de Postman con asserts automáticos en cada petición.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@indux.com",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "reemplaza_por_una_clave_segura",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "analistaEmail",
+      "value": "analista@aceros.com",
+      "type": "string"
+    },
+    {
+      "key": "analistaPassword",
+      "value": "Password123!",
+      "type": "string"
+    },
+    {
+      "key": "analistaToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "liderEmail",
+      "value": "lider@aceros.com",
+      "type": "string"
+    },
+    {
+      "key": "liderPassword",
+      "value": "Password123!",
+      "type": "string"
+    },
+    {
+      "key": "liderToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "empresaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "empresaAjenaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "analistaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "liderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "usuarioDesactivarEmail",
+      "value": "temporal@aceros.com",
+      "type": "string"
+    },
+    {
+      "key": "usuarioDesactivarId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "usuarioDesactivarToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "productoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "producto2Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "proceso1Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "proceso2Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "procesoP2Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recurso1Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recurso2Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recurso3Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reporteId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reporte2Id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reporteBorradorId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reporteInvalidoId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Autenticación Inicial (ADMIN)",
+      "item": [
+        {
+          "name": "1.1 Login ADMIN",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión con el administrador del sistema y almacena 'adminToken' para las peticiones administrativas.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var ts = Date.now();",
+                  "pm.collectionVariables.set('analistaEmail', 'analista_' + ts + '@aceros.com');",
+                  "pm.collectionVariables.set('liderEmail', 'lider_' + ts + '@aceros.com');",
+                  "pm.collectionVariables.set('usuarioDesactivarEmail', 'temporal_' + ts + '@aceros.com');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Respuesta contiene token JWT', function () { pm.expect(json.token).to.not.be.empty; });",
+                  "pm.test('Rol del usuario es ADMIN', function () { pm.expect(json.usuario.rol).to.eql('ADMIN'); });",
+                  "pm.collectionVariables.set('adminToken', json.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Empresas",
+      "item": [
+        {
+          "name": "2.1 Crear Empresa Principal (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Aceros del Norte S.A.S.\",\n  \"sector\": \"Metalmec\\u00e1nica\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Empresa creada correctamente', function () { pm.expect(json.nombre).to.include('Aceros'); });",
+                  "pm.collectionVariables.set('empresaId', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Listar Empresas (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Lista contiene al menos una empresa', function () { pm.expect(json.length).to.be.above(0); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.3 Obtener Empresa por ID (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/{{empresaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "{{empresaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('ID coincide con variable', function () { pm.expect(pm.response.json().id).to.eql(parseInt(pm.collectionVariables.get('empresaId'))); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.4 Actualizar Empresa (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/{{empresaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "{{empresaId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Aceros del Norte S.A.S. - Planta Central\",\n  \"sector\": \"Metalmec\\u00e1nica\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Nombre actualizado', function () { pm.expect(pm.response.json().nombre).to.include('Planta Central'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.5 Crear Empresa Ajena (para pruebas de aislamiento)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Textiles de Colombia S.A.\",\n  \"sector\": \"Textil\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('empresaAjenaId', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Usuarios y Autenticación por Rol",
+      "item": [
+        {
+          "name": "3.1 Registrar Usuario ANALISTA (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresaId\": \"{{empresaId}}\",\n  \"nombre\": \"Carlos G\\u00f3mez\",\n  \"email\": \"{{analistaEmail}}\",\n  \"password\": \"{{analistaPassword}}\",\n  \"rol\": \"ANALISTA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 o 409', function () { pm.expect(pm.response.code).to.be.oneOf([201, 409]); });",
+                  "if (pm.response.code === 201) { pm.collectionVariables.set('analistaId', pm.response.json().id.toString()); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Registrar Usuario LIDER (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresaId\": \"{{empresaId}}\",\n  \"nombre\": \"Laura M\\u00e9ndez\",\n  \"email\": \"{{liderEmail}}\",\n  \"password\": \"{{liderPassword}}\",\n  \"rol\": \"LIDER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 o 409', function () { pm.expect(pm.response.code).to.be.oneOf([201, 409]); });",
+                  "if (pm.response.code === 201) { pm.collectionVariables.set('liderId', pm.response.json().id.toString()); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 Registrar Usuario Temporal para Desactivación (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresaId\": \"{{empresaId}}\",\n  \"nombre\": \"Usuario Temporal\",\n  \"email\": \"{{usuarioDesactivarEmail}}\",\n  \"password\": \"Password123!\",\n  \"rol\": \"ANALISTA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('usuarioDesactivarId', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.4 Listar Usuarios (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.5 Actualizar Usuario (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/{{analistaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "{{analistaId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresaId\": \"{{empresaId}}\",\n  \"nombre\": \"Carlos G\\u00f3mez R.\",\n  \"email\": \"{{analistaEmail}}\",\n  \"password\": null,\n  \"rol\": \"ANALISTA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Nombre actualizado', function () { pm.expect(pm.response.json().nombre).to.eql('Carlos Gómez R.'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.6 Login ANALISTA (guarda analistaToken)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{analistaEmail}}\",\n  \"password\": \"{{analistaPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Rol es ANALISTA', function () { pm.expect(json.usuario.rol).to.eql('ANALISTA'); });",
+                  "pm.collectionVariables.set('analistaToken', json.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.7 Login LIDER (guarda liderToken)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{liderEmail}}\",\n  \"password\": \"{{liderPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Rol es LIDER', function () { pm.expect(json.usuario.rol).to.eql('LIDER'); });",
+                  "pm.collectionVariables.set('liderToken', json.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Catálogo: Productos y Procesos",
+      "item": [
+        {
+          "name": "4.1 Crear Producto 1 (Eje de Transmisión)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresaId\": \"{{empresaId}}\",\n  \"codigo\": \"PROD-01\",\n  \"nombre\": \"Eje de Transmisi\\u00f3n 50mm\",\n  \"unidadMedida\": \"piezas\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('productoId', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.2 Crear Producto 2 (Piñón de Acero - Comparte Recurso)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresaId\": \"{{empresaId}}\",\n  \"codigo\": \"PROD-02\",\n  \"nombre\": \"Pi\\u00f1\\u00f3n de Acero Templado\",\n  \"unidadMedida\": \"piezas\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('producto2Id', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.3 Listar Productos por Empresa",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos?empresaId={{empresaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos"
+              ],
+              "query": [
+                {
+                  "key": "empresaId",
+                  "value": "{{empresaId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.4 Crear Proceso 1 Producto 1 - Corte (Merma 5%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/procesos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "procesos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": \"{{productoId}}\",\n  \"liderId\": null,\n  \"codigo\": \"CORTE\",\n  \"nombre\": \"Corte de Barra\",\n  \"secuencia\": 1,\n  \"unidadProcesada\": \"piezas\",\n  \"merma\": 5.0,\n  \"unidadEntrada\": \"piezas\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('proceso1Id', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.5 Crear Proceso 2 Producto 1 - Torneado (Asignado a LIDER, Merma 0%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/procesos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "procesos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": \"{{productoId}}\",\n  \"liderId\": \"{{liderId}}\",\n  \"codigo\": \"TORNO\",\n  \"nombre\": \"Torneado CNC\",\n  \"secuencia\": 2,\n  \"unidadProcesada\": \"piezas\",\n  \"merma\": 0.0,\n  \"unidadEntrada\": \"piezas\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('proceso2Id', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.6 Crear Proceso Producto 2 - Torneado Piñón (Merma 0%)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/procesos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "procesos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": \"{{producto2Id}}\",\n  \"liderId\": null,\n  \"codigo\": \"TORNO-P2\",\n  \"nombre\": \"Torneado de Pi\\u00f1\\u00f3n\",\n  \"secuencia\": 1,\n  \"unidadProcesada\": \"piezas\",\n  \"merma\": 0.0,\n  \"unidadEntrada\": \"piezas\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('procesoP2Id', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "4.7 Listar Procesos Ordenados de Producto 1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/productos/{{productoId}}/procesos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "productos",
+                "{{productoId}}",
+                "procesos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Procesos ordenados por secuencia', function () { pm.expect(json[0].secuencia).to.be.below(json[1].secuencia); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - Recursos y Vínculos",
+      "item": [
+        {
+          "name": "5.1 Crear Recurso 1 (Torno CNC Haas - Cuello Compartido: 1 maquina)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/recursos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recursos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresaId\": \"{{empresaId}}\",\n  \"codigo\": \"REC-01\",\n  \"nombre\": \"Torno CNC Haas ST-20\",\n  \"tipo\": \"M\\u00c1QUINA\",\n  \"cantidadDisponible\": 1,\n  \"estado\": \"DISPONIBLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('recurso1Id', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.2 Crear Recurso 2 (Sierra Cinta Automática)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/recursos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recursos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresaId\": \"{{empresaId}}\",\n  \"codigo\": \"REC-02\",\n  \"nombre\": \"Sierra Cinta Autom\\u00e1tica\",\n  \"tipo\": \"M\\u00c1QUINA\",\n  \"cantidadDisponible\": 1,\n  \"estado\": \"DISPONIBLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('recurso2Id', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.3 Crear Recurso 3 (Prensa Hidráulica - 2 maquinas)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/recursos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recursos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"empresaId\": \"{{empresaId}}\",\n  \"codigo\": \"REC-03\",\n  \"nombre\": \"Prensa Hidr\\u00e1ulica 100T\",\n  \"tipo\": \"M\\u00c1QUINA\",\n  \"cantidadDisponible\": 2,\n  \"estado\": \"DISPONIBLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('recurso3Id', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.4 Listar Recursos de la Empresa",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/recursos?empresaId={{empresaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recursos"
+              ],
+              "query": [
+                {
+                  "key": "empresaId",
+                  "value": "{{empresaId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.5 Vincular Recurso 1 a Proceso 2 (Torno -> Torneado Eje, tiempoRef 0.20)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/recursos/{{recurso1Id}}/procesos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recursos",
+                "{{recurso1Id}}",
+                "procesos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"procesoId\": \"{{proceso2Id}}\",\n  \"tiempoReferencia\": 0.2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.6 Vincular Recurso 1 a Proceso Producto 2 (Torno -> Torneado Piñón, tiempoRef 0.20)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/recursos/{{recurso1Id}}/procesos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recursos",
+                "{{recurso1Id}}",
+                "procesos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"procesoId\": \"{{procesoP2Id}}\",\n  \"tiempoReferencia\": 0.2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.7 Vincular Recurso 2 a Proceso 1 (Sierra -> Corte, tiempoRef 0.15)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/recursos/{{recurso2Id}}/procesos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recursos",
+                "{{recurso2Id}}",
+                "procesos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"procesoId\": \"{{proceso1Id}}\",\n  \"tiempoReferencia\": 0.15\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 - Reportes de Producción",
+      "item": [
+        {
+          "name": "6.1 Crear Reporte Producto 2 (Demanda 800, tiempo 0.2 -> 160h)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": \"{{producto2Id}}\",\n  \"plantaArea\": \"Planta Metalmec\\u00e1nica\",\n  \"frecuencia\": \"MENSUAL\",\n  \"periodoInicio\": \"2026-01-01\",\n  \"periodoFin\": \"2026-01-31\",\n  \"demanda\": 800.0,\n  \"produccionReal\": 800.0,\n  \"lineas\": [\n    {\n      \"recursoId\": \"{{recurso1Id}}\",\n      \"tiempoProcesamiento\": 0.2,\n      \"unidadReferencia\": \"piezas\",\n      \"tiempoCalendario\": 720.0,\n      \"tiempoNoDisponible\": 0.0,\n      \"numeroTurnos\": 2,\n      \"horasPorTurno\": 8.0,\n      \"diasOperacion\": 20\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('reporte2Id', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.2 Crear Reporte Producto 1 (Demanda 1000, tiempo 0.2 -> 200h)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": \"{{productoId}}\",\n  \"plantaArea\": \"Planta Metalmec\\u00e1nica\",\n  \"frecuencia\": \"MENSUAL\",\n  \"periodoInicio\": \"2026-01-01\",\n  \"periodoFin\": \"2026-01-31\",\n  \"demanda\": 1000.0,\n  \"produccionReal\": 950.0,\n  \"lineas\": [\n    {\n      \"recursoId\": \"{{recurso1Id}}\",\n      \"tiempoProcesamiento\": 0.2,\n      \"unidadReferencia\": \"piezas\",\n      \"tiempoCalendario\": 720.0,\n      \"tiempoNoDisponible\": 0.0,\n      \"numeroTurnos\": 2,\n      \"horasPorTurno\": 8.0,\n      \"diasOperacion\": 20\n    },\n    {\n      \"recursoId\": \"{{recurso2Id}}\",\n      \"tiempoProcesamiento\": 0.15,\n      \"unidadReferencia\": \"piezas\",\n      \"tiempoCalendario\": 720.0,\n      \"tiempoNoDisponible\": 0.0,\n      \"numeroTurnos\": 2,\n      \"horasPorTurno\": 8.0,\n      \"diasOperacion\": 20\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('reporteId', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.3 Obtener Reporte 1 Completo (ANALISTA)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporteId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Analista visualiza las 2 lineas', function () { pm.expect(json.lineas.length).to.eql(2); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.4 Obtener Reporte 1 Filtrado (LIDER solo ve Recurso 1)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{liderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporteId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var lineas = pm.response.json().lineas;",
+                  "pm.test('Lider solo ve Recurso 1 de su proceso asignado', function () {",
+                  "    pm.expect(lineas.length).to.eql(1);",
+                  "    pm.expect(lineas[0].recursoId).to.eql(parseInt(pm.collectionVariables.get('recurso1Id')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 - Validación y Análisis Persistido",
+      "item": [
+        {
+          "name": "7.1 Validar Reporte Producto 2 (Pasa a VALIDADO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporte2Id}}/validar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporte2Id}}",
+                "validar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Estado queda VALIDADO', function () { pm.expect(pm.response.json().estado).to.eql('VALIDADO'); });",
+                  "pm.test('Sin errores criticos', function () { pm.expect(pm.response.json().errores).to.eql(0); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.2 Analizar Reporte Producto 2 (Pasa a ANALIZADO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporte2Id}}/analizar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporte2Id}}",
+                "analizar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Estado queda ANALIZADO', function () { pm.expect(pm.response.json().estado).to.eql('ANALIZADO'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.3 Validar Reporte Producto 1 (Pasa a VALIDADO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporteId}}/validar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporteId}}",
+                "validar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Estado queda VALIDADO', function () { pm.expect(pm.response.json().estado).to.eql('VALIDADO'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.4 Consultar Validaciones Guardadas de Reporte 1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporteId}}/validaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporteId}}",
+                "validaciones"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Retorna lista de resultados', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.5 Analizar Reporte Producto 1 (Control Numérico Exacto SteelForce)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporteId}}/analizar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporteId}}",
+                "analizar"
+              ]
+            },
+            "description": "Ejecuta el análisis persistido y comprueba los cálculos numéricos de SteelForce: aporte propio 200h + aporte compartido 160h = 360h totales sobre 320h disponibles -> 112.5% de utilización, sobrecarga y prioridad 1."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Reporte queda ANALIZADO', function () { pm.expect(json.estado).to.eql('ANALIZADO'); });",
+                  "var r1 = json.recursos.find(r => r.recursoId == pm.collectionVariables.get('recurso1Id'));",
+                  "pm.test('Recurso compartido encontrado', function () { pm.expect(r1).to.exist; });",
+                  "pm.test('CONTROL NUMÉRICO: horasRequeridas == 360', function () { pm.expect(Number(r1.horasRequeridas)).to.eql(360); });",
+                  "pm.test('CONTROL NUMÉRICO: horasDisponibles == 320', function () { pm.expect(Number(r1.horasDisponibles)).to.eql(320); });",
+                  "pm.test('CONTROL NUMÉRICO: utilizacion == 112.50 %', function () { pm.expect(Number(r1.utilizacion)).to.eql(112.5); });",
+                  "pm.test('CONTROL NUMÉRICO: clasificacion == SOBRECARGA', function () { pm.expect(r1.clasificacion).to.eql('SOBRECARGA'); });",
+                  "pm.test('CONTROL NUMÉRICO: deficitHoras == 40', function () { pm.expect(Number(r1.deficitHoras)).to.eql(40); });",
+                  "pm.test('CONTROL NUMÉRICO: impacto == 11.11 %', function () { pm.expect(Number(r1.impacto)).to.eql(11.11); });",
+                  "pm.test('CONTROL NUMÉRICO: prioridad == 1', function () { pm.expect(r1.prioridad).to.eql(1); });",
+                  "pm.test('Diagnostico menciona compartido', function () { pm.expect(r1.diagnostico).to.include('compartido'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.6 Consultar Análisis Guardado (ANALISTA ve todos)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporteId}}/analisis",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporteId}}",
+                "analisis"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Analista ve todos los recursos analizados', function () { pm.expect(pm.response.json().recursos.length).to.eql(2); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.7 Consultar Análisis Guardado Filtrado (LIDER solo ve Recurso 1)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{liderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporteId}}/analisis",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporteId}}",
+                "analisis"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var recursos = pm.response.json().recursos;",
+                  "pm.test('Lider solo ve su recurso asignado', function () {",
+                  "    pm.expect(recursos.length).to.eql(1);",
+                  "    pm.expect(recursos[0].recursoId).to.eql(parseInt(pm.collectionVariables.get('recurso1Id')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 - Recomendaciones Operativas",
+      "item": [
+        {
+          "name": "8.1 Obtener Recomendaciones de Reporte 1 (ANALISTA)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporteId}}/recomendaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporteId}}",
+                "recomendaciones"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "var r1 = json.find(r => r.recursoId == pm.collectionVariables.get('recurso1Id'));",
+                  "pm.test('Recomendacion CRITICA para restriccion principal', function () {",
+                  "    pm.expect(r1.nivel).to.eql('CRITICA');",
+                  "    pm.expect(r1.prioridad).to.eql(1);",
+                  "    pm.expect(r1.resumen).to.include('Sobrecarga');",
+                  "    pm.expect(r1.acciones.some(a => a.includes('restricción principal'))).to.be.true;",
+                  "    pm.expect(r1.acciones.some(a => a.includes('comparten este recurso'))).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "8.2 Obtener Recomendaciones Filtradas (LIDER)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{liderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporteId}}/recomendaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporteId}}",
+                "recomendaciones"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Lider solo ve su recurso', function () {",
+                  "    pm.expect(json.length).to.eql(1);",
+                  "    pm.expect(json[0].recursoId).to.eql(parseInt(pm.collectionVariables.get('recurso1Id')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 - Causas del Déficit",
+      "item": [
+        {
+          "name": "9.1 Desglose de Factores del Déficit (ANALISTA)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporteId}}/causas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporteId}}",
+                "causas"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "var r1 = json.find(c => c.recursoId == pm.collectionVariables.get('recurso1Id'));",
+                  "pm.test('Recurso 1 tiene desglose de factores', function () {",
+                  "    pm.expect(r1).to.exist;",
+                  "    pm.expect(Number(r1.deficitHoras)).to.eql(40);",
+                  "    pm.expect(r1.causaPrincipal).to.eql('RECURSO_COMPARTIDO');",
+                  "    pm.expect(r1.factores.length).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "9.2 Desglose de Factores Filtrado (LIDER)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{liderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporteId}}/causas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporteId}}",
+                "causas"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Lider solo ve causas de sus recursos', function () {",
+                  "    pm.expect(json.every(c => c.recursoId == pm.collectionVariables.get('recurso1Id'))).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10 - Histórico y Tendencias",
+      "item": [
+        {
+          "name": "10.1 Consultar Histórico y Tendencia de Utilización (Recurso 1)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/recursos/{{recurso1Id}}/historico?limite=12",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recursos",
+                "{{recurso1Id}}",
+                "historico"
+              ],
+              "query": [
+                {
+                  "key": "limite",
+                  "value": "12"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Recurso ID coincide', function () { pm.expect(json.recursoId).to.eql(parseInt(pm.collectionVariables.get('recurso1Id'))); });",
+                  "pm.test('Puntos historicos presentes', function () { pm.expect(json.puntos).to.be.an('array'); });",
+                  "pm.test('Tendencia calculada', function () { pm.expect(json.tendencia).to.be.an('object'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "11 - Importación Masiva (Excel y CSV)",
+      "item": [
+        {
+          "name": "11.1 Descargar Plantilla Oficial XLSX",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/importaciones/reportes/plantilla?formato=xlsx",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "importaciones",
+                "reportes",
+                "plantilla"
+              ],
+              "query": [
+                {
+                  "key": "formato",
+                  "value": "xlsx"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "11.2 Descargar Plantilla Oficial CSV",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/importaciones/reportes/plantilla?formato=csv",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "importaciones",
+                "reportes",
+                "plantilla"
+              ],
+              "query": [
+                {
+                  "key": "formato",
+                  "value": "csv"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "11.3 Importar Reportes - Vista Previa (confirmar=false) [REQUIERE ADJUNTAR ARCHIVO]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/importaciones/reportes?confirmar=false&empresaId={{empresaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "importaciones",
+                "reportes"
+              ],
+              "query": [
+                {
+                  "key": "confirmar",
+                  "value": "false"
+                },
+                {
+                  "key": "empresaId",
+                  "value": "{{empresaId}}"
+                }
+              ]
+            },
+            "description": "[MANUAL EN POSTMAN]\n1. Abre la pestaña 'Body'.\n2. En la clave 'archivo', pasa el cursor sobre el campo Value y selecciona 'File'.\n3. Elige tu archivo .xlsx o .csv generado con la plantilla.\n4. Al enviar con confirmar=false, devuelve la vista previa agrupada sin guardar en base de datos.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "archivo",
+                  "type": "file",
+                  "src": "",
+                  "description": "[MANUAL] Selecciona aquí el archivo .xlsx o .csv antes de ejecutar"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Nota: Esta prueba devolverá 200 si adjuntaste un archivo válido, o 400 si la ejecutas sin archivo.",
+                  "pm.test('Petición ejecutada (200 con archivo o 400 sin archivo)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "11.4 Importar Reportes - Confirmar Creación (confirmar=true) [REQUIERE ADJUNTAR ARCHIVO]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/importaciones/reportes?confirmar=true&empresaId={{empresaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "importaciones",
+                "reportes"
+              ],
+              "query": [
+                {
+                  "key": "confirmar",
+                  "value": "true"
+                },
+                {
+                  "key": "empresaId",
+                  "value": "{{empresaId}}"
+                }
+              ]
+            },
+            "description": "[MANUAL EN POSTMAN]\n1. Abre la pestaña 'Body'.\n2. En la clave 'archivo', selecciona tu archivo .xlsx o .csv.\n3. Al enviar con confirmar=true, si no hay errores se crean los reportes en BORRADOR dentro de una sola transacción (todo o nada).",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "archivo",
+                  "type": "file",
+                  "src": "",
+                  "description": "[MANUAL] Selecciona aquí el archivo .xlsx o .csv antes de ejecutar"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Petición ejecutada (200 guardado, 422 con errores, o 400 sin archivo)', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 422, 400]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "12 - Análisis al Vuelo (Instantáneo)",
+      "item": [
+        {
+          "name": "12.1 Calcular Cuello de Botella al Vuelo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/analisis/calcular",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analisis",
+                "calcular"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"demanda\": 1000.0,\n  \"recursos\": [\n    {\n      \"nombre\": \"Torno Haas\",\n      \"tiempoProcesamiento\": 0.2,\n      \"turnos\": 2,\n      \"horasPorTurno\": 8.0,\n      \"diasOperacion\": 20,\n      \"cantidadRecursos\": 1\n    },\n    {\n      \"nombre\": \"Sierra Cinta\",\n      \"tiempoProcesamiento\": 0.1,\n      \"turnos\": 1,\n      \"horasPorTurno\": 8.0,\n      \"diasOperacion\": 20,\n      \"cantidadRecursos\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Identifica cuello de botella', function () { pm.expect(json.recursos).to.not.be.empty; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "13 - Casos Negativos y Seguridad",
+      "item": [
+        {
+          "name": "13.1 Crear Reporte en Borrador (para probar 409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": \"{{productoId}}\",\n  \"plantaArea\": \"Planta Experimental\",\n  \"frecuencia\": \"MENSUAL\",\n  \"periodoInicio\": \"2026-02-01\",\n  \"periodoFin\": \"2026-02-28\",\n  \"demanda\": 500.0,\n  \"produccionReal\": 450.0,\n  \"lineas\": [\n    {\n      \"recursoId\": \"{{recurso2Id}}\",\n      \"tiempoProcesamiento\": 0.15,\n      \"unidadReferencia\": \"piezas\",\n      \"tiempoCalendario\": 720.0,\n      \"tiempoNoDisponible\": 0.0,\n      \"numeroTurnos\": 2,\n      \"horasPorTurno\": 8.0,\n      \"diasOperacion\": 20\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('reporteBorradorId', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "13.2 Obtener Análisis de Reporte NO Analizado (Espera 409 Conflict)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporteBorradorId}}/analisis",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporteBorradorId}}",
+                "analisis"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 409 Conflict', function () { pm.response.to.have.status(409); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Mensaje indica que no ha sido analizado', function () { pm.expect(json.detail).to.include('no ha sido analizado'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "13.3 Crear Reporte con Error Crítico (Turnos*Horas > 24)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": \"{{productoId}}\",\n  \"plantaArea\": \"Planta Error\",\n  \"frecuencia\": \"MENSUAL\",\n  \"periodoInicio\": \"2026-03-01\",\n  \"periodoFin\": \"2026-03-31\",\n  \"demanda\": 500.0,\n  \"produccionReal\": 450.0,\n  \"lineas\": [\n    {\n      \"recursoId\": \"{{recurso1Id}}\",\n      \"tiempoProcesamiento\": 0.2,\n      \"unidadReferencia\": \"piezas\",\n      \"tiempoCalendario\": 720.0,\n      \"tiempoNoDisponible\": 0.0,\n      \"numeroTurnos\": 3,\n      \"horasPorTurno\": 10.0,\n      \"diasOperacion\": 20\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('reporteInvalidoId', json.id.toString());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "13.4 Analizar Reporte con Errores Críticos (Espera 422 Unprocessable Entity)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes/{{reporteInvalidoId}}/analizar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes",
+                "{{reporteInvalidoId}}",
+                "analizar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 422 Unprocessable Entity', function () { pm.response.to.have.status(422); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Estado queda CON_ERRORES', function () { pm.expect(json.estado).to.eql('CON_ERRORES'); });",
+                  "pm.test('Contiene validaciones de severidad ERROR_CRITICO', function () {",
+                  "    pm.expect(json.validaciones.some(v => v.severidad === 'ERROR_CRITICO')).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "13.5 Rol LIDER Intentando Crear Reporte (Espera 403 Forbidden)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{liderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": \"{{productoId}}\",\n  \"plantaArea\": \"Planta Lider\",\n  \"frecuencia\": \"MENSUAL\",\n  \"periodoInicio\": \"2026-01-01\",\n  \"periodoFin\": \"2026-01-31\",\n  \"demanda\": 100.0,\n  \"produccionReal\": 100.0,\n  \"lineas\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () { pm.response.to.have.status(403); });",
+                  "pm.test('ProblemDetail devuelto', function () { pm.expect(pm.response.json().status).to.eql(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "13.6 Rol ANALISTA Accediendo a Empresa Ajena (Espera 403 Forbidden)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/{{empresaAjenaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "{{empresaAjenaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 403 Forbidden', function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "13.7 Login con Usuario Temporal para Prueba de Desactivación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{usuarioDesactivarEmail}}\",\n  \"password\": \"Password123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.collectionVariables.set('usuarioDesactivarToken', pm.response.json().token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "13.8 Desactivar Usuario Temporal (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/{{usuarioDesactivarId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "{{usuarioDesactivarId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 204 No Content', function () { pm.response.to.have.status(204); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "13.9 Petición con Token de Usuario Desactivado (Espera 401 Unauthorized Inmediato)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{usuarioDesactivarToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/{{empresaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "{{empresaId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 401 Unauthorized', function () { pm.response.to.have.status(401); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Detalle explica desactivacion', function () { pm.expect(json.detail).to.include('desactivado'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "13.10 Parámetro de Ruta Inválido tipo alfanumérico en vez de Long (Espera 400 Bad Request)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "abc"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Titulo indica parámetro inválido', function () { pm.expect(json.title).to.include('Parámetro'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "13.11 JSON con Enum Inválido (Espera 400 Bad Request)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{analistaToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reportes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reportes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": \"{{productoId}}\",\n  \"plantaArea\": \"Planta\",\n  \"frecuencia\": \"SEMANA_INVALIDA\",\n  \"periodoInicio\": \"2026-01-01\",\n  \"periodoFin\": \"2026-01-31\",\n  \"demanda\": 100.0,\n  \"produccionReal\": 100.0,\n  \"lineas\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 400 Bad Request', function () { pm.response.to.have.status(400); });",
+                  "pm.test('ProblemDetail devuelto', function () { pm.expect(pm.response.json().status).to.eql(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "13.12 Método HTTP No Permitido (Espera 405 Method Not Allowed)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "1"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 405 Method Not Allowed', function () { pm.response.to.have.status(405); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "13.13 Ruta Inexistente (Espera 404 Not Found)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ruta-que-no-existe-en-el-sistema",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ruta-que-no-existe-en-el-sistema"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code es 404 Not Found', function () { pm.response.to.have.status(404); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

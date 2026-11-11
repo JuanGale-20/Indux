@@ -1,5 +1,6 @@
 package com.indux.induxbackend.application.service;
 
+import com.indux.induxbackend.application.port.in.UsuarioUseCase.ActualizarUsuarioComando;
 import com.indux.induxbackend.application.port.in.UsuarioUseCase.RegistrarUsuarioComando;
 import com.indux.induxbackend.application.port.out.EmpresaRepositoryPort;
 import com.indux.induxbackend.application.port.out.PasswordHasherPort;
@@ -87,5 +88,49 @@ class UsuarioServiceTest {
         assertThat(u.rol()).isEqualTo(Rol.ADMIN);
         assertThat(u.empresaId()).isNull();
         verifyNoInteractions(empresas);
+    }
+
+    @Test
+    void actualizarCambiaNombreYRol() {
+        empresaExiste();
+        Usuario actual = new Usuario(10L, 1L, "Carlos", "carlos@aceros.com", "OLD_HASH", Rol.LIDER, true);
+        when(usuarios.buscarPorId(10L)).thenReturn(Optional.of(actual));
+        when(usuarios.guardar(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        ActualizarUsuarioComando cmd = new ActualizarUsuarioComando(
+                1L, "Carlos Gomez", "carlos@aceros.com", null, Rol.ANALISTA);
+        Usuario actualizado = service.actualizar(10L, cmd);
+
+        assertThat(actualizado.nombre()).isEqualTo("Carlos Gomez");
+        assertThat(actualizado.rol()).isEqualTo(Rol.ANALISTA);
+        assertThat(actualizado.passwordHash()).isEqualTo("OLD_HASH");
+    }
+
+    @Test
+    void actualizarRechazaCorreoDuplicado() {
+        empresaExiste();
+        Usuario actual = new Usuario(10L, 1L, "Carlos", "carlos@aceros.com", "OLD_HASH", Rol.LIDER, true);
+        when(usuarios.buscarPorId(10L)).thenReturn(Optional.of(actual));
+        when(usuarios.existePorEmail("otro@aceros.com")).thenReturn(true);
+
+        ActualizarUsuarioComando cmd = new ActualizarUsuarioComando(
+                1L, "Carlos Gomez", "otro@aceros.com", null, Rol.ANALISTA);
+
+        assertThatThrownBy(() -> service.actualizar(10L, cmd))
+                .isInstanceOf(ConflictoException.class)
+                .hasMessageContaining("Ya existe un usuario con el correo");
+    }
+
+    @Test
+    void actualizarRechazaUsuarioSinEmpresaSiNoEsAdmin() {
+        Usuario actual = new Usuario(10L, 1L, "Carlos", "carlos@aceros.com", "OLD_HASH", Rol.LIDER, true);
+        when(usuarios.buscarPorId(10L)).thenReturn(Optional.of(actual));
+
+        ActualizarUsuarioComando cmd = new ActualizarUsuarioComando(
+                null, "Carlos Gomez", "carlos@aceros.com", null, Rol.ANALISTA);
+
+        assertThatThrownBy(() -> service.actualizar(10L, cmd))
+                .isInstanceOf(DominioException.class)
+                .hasMessageContaining("deben pertenecer a una empresa");
     }
 }

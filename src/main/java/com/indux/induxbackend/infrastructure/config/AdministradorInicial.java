@@ -1,6 +1,7 @@
 package com.indux.induxbackend.infrastructure.config;
 
 import com.indux.induxbackend.application.port.in.UsuarioUseCase;
+import com.indux.induxbackend.application.port.in.UsuarioUseCase.ActualizarUsuarioComando;
 import com.indux.induxbackend.application.port.in.UsuarioUseCase.RegistrarUsuarioComando;
 import com.indux.induxbackend.application.port.out.UsuarioRepositoryPort;
 import com.indux.induxbackend.domain.model.Rol;
@@ -30,10 +31,16 @@ public class AdministradorInicial implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (usuarios.existePorEmail(email.trim().toLowerCase())) {
+        String correo = email.trim().toLowerCase();
+        var adminExistente = usuarios.buscarPorEmail(correo);
+        if (adminExistente.isPresent()) {
+            var admin = adminExistente.get();
+            registro.actualizar(admin.id(), new ActualizarUsuarioComando(
+                    admin.empresaId(), admin.nombre(), admin.email(), password, Rol.ADMIN));
+            log.info("Administrador inicial sincronizado con configuración: {}", correo);
             return;
         }
-        registro.registrar(new RegistrarUsuarioComando(null, "Administrador", email, password, Rol.ADMIN));
-        log.info("Administrador inicial creado: {}", email);
+        registro.registrar(new RegistrarUsuarioComando(null, "Administrador", correo, password, Rol.ADMIN));
+        log.info("Administrador inicial creado: {}", correo);
     }
 }

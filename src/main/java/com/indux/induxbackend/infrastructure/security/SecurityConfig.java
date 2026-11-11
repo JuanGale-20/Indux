@@ -23,28 +23,47 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain filtros(HttpSecurity http, JwtService jwt,
+    SecurityFilterChain filtros(HttpSecurity http,
+                                JwtService jwt,
+                                VerificadorUsuarioActivo verificador,
                                 @Value("${indux.cors.origen-permitido}") String origen) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable()) // API sin sesiones ni cookies: el token viaja en la cabecera
                 .cors(cors -> cors.configurationSource(corsConfig(origen)))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
-                        .requestMatchers("/api/auth/**", "/actuator/health", "/error").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/actuator/health",
+                                "/error",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/empresas", "/api/usuarios").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,
                                 "/api/empresas", "/api/productos", "/api/procesos", "/api/usuarios",
                                 "/api/recursos", "/api/recursos/*/procesos")
                         .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/empresas/**", "/api/productos/**",
-                                "/api/procesos/**", "/api/usuarios/**", "/api/recursos/**")
+                        .requestMatchers(HttpMethod.PUT,
+                                "/api/empresas/**", "/api/productos/**", "/api/procesos/**",
+                                "/api/usuarios/**", "/api/recursos/**")
                         .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/empresas/**", "/api/productos/**",
-                                "/api/procesos/**", "/api/usuarios/**", "/api/recursos/**")
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/api/empresas/**", "/api/productos/**", "/api/procesos/**",
+                                "/api/usuarios/**", "/api/recursos/**")
                         .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/reportes", "/api/reportes/*/validar", "/api/reportes/*/analizar",
+                                "/api/importaciones/**")
+                        .hasAnyRole("ADMIN", "ANALISTA")
+                        .requestMatchers(HttpMethod.GET, "/api/importaciones/**").hasAnyRole("ADMIN", "ANALISTA")
+                        .requestMatchers(HttpMethod.PUT, "/api/reportes/**").hasAnyRole("ADMIN", "ANALISTA")
+                        .requestMatchers(HttpMethod.DELETE, "/api/reportes/**").hasAnyRole("ADMIN", "ANALISTA")
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().denyAll())
                 .addFilterBefore(new JwtAuthenticationFilter(jwt), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new FiltroUsuarioActivo(verificador), JwtAuthenticationFilter.class)
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint((req, res, ex) ->
                                 escribir(res, 401, "No autenticado", "Debes iniciar sesión"))
