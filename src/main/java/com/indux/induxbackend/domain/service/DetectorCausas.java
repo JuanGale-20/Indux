@@ -33,27 +33,32 @@ public class DetectorCausas {
         }
 
         BigDecimal deficit = r.deficitHoras();
+        BigDecimal deficitRestante = deficit;
         List<DetalleFactorCausa> factores = new ArrayList<>();
 
-        // 1. RECURSO_COMPARTIDO = max(0, totales - aporteHoras)
+        // 1. RECURSO_COMPARTIDO = max(0, totales - aporteHoras), acotado al deficit restante
         BigDecimal totales = r.horasRequeridas() != null ? r.horasRequeridas() : BigDecimal.ZERO;
         BigDecimal aportePropio = r.aporteHoras() != null ? r.aporteHoras() : BigDecimal.ZERO;
-        BigDecimal compartidoHoras = totales.subtract(aportePropio).max(BigDecimal.ZERO).setScale(4, RoundingMode.HALF_UP);
-        if (compartidoHoras.signum() > 0) {
+        BigDecimal compartidoBruto = totales.subtract(aportePropio).max(BigDecimal.ZERO).setScale(4, RoundingMode.HALF_UP);
+        if (compartidoBruto.signum() > 0 && deficitRestante.signum() > 0) {
+            BigDecimal compartidoHoras = compartidoBruto.min(deficitRestante);
+            deficitRestante = deficitRestante.subtract(compartidoHoras);
             BigDecimal pct = calcularPorcentaje(compartidoHoras, deficit);
-            String desc = "Otros productos le exigen " + formatear(compartidoHoras) + " h al mismo recurso";
+            String desc = "Otros productos le exigen " + formatear(compartidoBruto) + " h al mismo recurso";
             factores.add(new DetalleFactorCausa(FactorCausa.RECURSO_COMPARTIDO, compartidoHoras, pct, desc));
         }
 
-        // 2. TIEMPO_PROCESAMIENTO: solo si tiempoProcesamiento > tiempoReferencia * 1.10
+        // 2. TIEMPO_PROCESAMIENTO: solo si tiempoProcesamiento > tiempoReferencia * 1.10, acotado al deficit restante
         BigDecimal t = linea != null ? linea.tiempoProcesamiento() : null;
-        if (tiempoReferencia != null && tiempoReferencia.signum() > 0 && t != null) {
+        if (tiempoReferencia != null && tiempoReferencia.signum() > 0 && t != null && deficitRestante.signum() > 0) {
             BigDecimal limite = tiempoReferencia.multiply(UMBRAL_TIEMPO);
             if (t.compareTo(limite) > 0) {
-                BigDecimal excesoHoras = aportePropio.multiply(t.subtract(tiempoReferencia))
+                BigDecimal excesoBruto = aportePropio.multiply(t.subtract(tiempoReferencia))
                         .divide(t, 4, RoundingMode.HALF_UP)
                         .max(BigDecimal.ZERO);
-                if (excesoHoras.signum() > 0) {
+                if (excesoBruto.signum() > 0) {
+                    BigDecimal excesoHoras = excesoBruto.min(deficitRestante);
+                    deficitRestante = deficitRestante.subtract(excesoHoras);
                     BigDecimal pctSupera = t.subtract(tiempoReferencia).multiply(CIEN)
                             .divide(tiempoReferencia, 2, RoundingMode.HALF_UP);
                     BigDecimal pctDeficit = calcularPorcentaje(excesoHoras, deficit);
@@ -63,35 +68,35 @@ public class DetectorCausas {
             }
         }
 
-        // 3. MERMA = aporteHoras - aporteHorasConMermaCero
-        if (aporteSinMerma != null) {
-            BigDecimal mermaHoras = aportePropio.subtract(aporteSinMerma).max(BigDecimal.ZERO).setScale(4, RoundingMode.HALF_UP);
-            if (mermaHoras.signum() > 0) {
+        // 3. MERMA = aporteHoras - aporteHorasConMermaCero, acotado al deficit restante
+        if (aporteSinMerma != null && deficitRestante.signum() > 0) {
+            BigDecimal mermaBruto = aportePropio.subtract(aporteSinMerma).max(BigDecimal.ZERO).setScale(4, RoundingMode.HALF_UP);
+            if (mermaBruto.signum() > 0) {
+                BigDecimal mermaHoras = mermaBruto.min(deficitRestante);
+                deficitRestante = deficitRestante.subtract(mermaHoras);
                 BigDecimal pct = calcularPorcentaje(mermaHoras, deficit);
-                String desc = "La merma de los procesos obliga a procesar " + formatear(mermaHoras) + " h adicionales";
+                String desc = "La merma de los procesos obliga a procesar " + formatear(mermaBruto) + " h adicionales";
                 factores.add(new DetalleFactorCausa(FactorCausa.MERMA, mermaHoras, pct, desc));
             }
         }
 
-        // 4. TIEMPO_NO_DISPONIBLE = tiempoNoDisponible de la línea (0 si es nulo)
-        BigDecimal noDisponible = (linea != null && linea.tiempoNoDisponible() != null)
+        // 4. TIEMPO_NO_DISPONIBLE = tiempoNoDisponible de la línea (0 si es nulo), acotado al deficit restante
+        BigDecimal noDisponibleBruto = (linea != null && linea.tiempoNoDisponible() != null)
                 ? linea.tiempoNoDisponible().max(BigDecimal.ZERO).setScale(4, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
-        if (noDisponible.signum() > 0) {
+        if (noDisponibleBruto.signum() > 0 && deficitRestante.signum() > 0) {
+            BigDecimal noDisponible = noDisponibleBruto.min(deficitRestante);
+            deficitRestante = deficitRestante.subtract(noDisponible);
             BigDecimal pct = calcularPorcentaje(noDisponible, deficit);
-            String desc = "El tiempo no disponible resta " + formatear(noDisponible) + " h a la capacidad";
+            String desc = "El tiempo no disponible resta " + formatear(noDisponibleBruto) + " h a la capacidad";
             factores.add(new DetalleFactorCausa(FactorCausa.TIEMPO_NO_DISPONIBLE, noDisponible, pct, desc));
         }
 
-        // 5. DEMANDA (residual) = max(0, deficit - suma de los anteriores)
-        BigDecimal sumaAnteriores = factores.stream()
-                .map(DetalleFactorCausa::horas)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal demandaHoras = deficit.subtract(sumaAnteriores).max(BigDecimal.ZERO).setScale(4, RoundingMode.HALF_UP);
-        if (demandaHoras.signum() > 0) {
-            BigDecimal pct = calcularPorcentaje(demandaHoras, deficit);
-            String desc = "La demanda del período supera la capacidad programada en " + formatear(demandaHoras) + " h";
-            factores.add(new DetalleFactorCausa(FactorCausa.DEMANDA, demandaHoras, pct, desc));
+        // 5. DEMANDA (residual) = deficitRestante
+        if (deficitRestante.signum() > 0) {
+            BigDecimal pct = calcularPorcentaje(deficitRestante, deficit);
+            String desc = "La demanda del período supera la capacidad programada en " + formatear(deficitRestante) + " h";
+            factores.add(new DetalleFactorCausa(FactorCausa.DEMANDA, deficitRestante, pct, desc));
         }
 
         // Ordenar de mayor a menor por horas

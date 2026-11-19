@@ -3,6 +3,7 @@ package com.indux.induxbackend.domain.service;
 import com.indux.induxbackend.domain.model.AnalisisRecursoReporte;
 import com.indux.induxbackend.domain.model.CausaDeficitRecurso;
 import com.indux.induxbackend.domain.model.ClasificacionRestriccion;
+import com.indux.induxbackend.domain.model.DetalleFactorCausa;
 import com.indux.induxbackend.domain.model.FactorCausa;
 import com.indux.induxbackend.domain.model.ReporteRecurso;
 import org.junit.jupiter.api.DisplayName;
@@ -69,10 +70,10 @@ class DetectorCausasTest {
     }
 
     @Test
-    @DisplayName("Recurso compartido genera factor con sus horas y porcentaje")
+    @DisplayName("Recurso compartido queda acotado al deficit y genera factor con 100 %")
     void recursoCompartido() {
         // totales 360, aporte 200 -> compartido = 160. deficit = 40.
-        // Como compartido (160) supera el deficit (40), el tope del porcentaje es 100 %.
+        // Como compartido (160) supera el deficit (40), las horas imputadas se acotan a 40 (100 %).
         AnalisisRecursoReporte r = crearAnalisis(
                 new BigDecimal("200"), new BigDecimal("360"), new BigDecimal("320"),
                 new BigDecimal("40"), 1);
@@ -82,12 +83,12 @@ class DetectorCausasTest {
 
         assertThat(causa).isNotNull();
         assertThat(causa.causaPrincipal()).isEqualTo(FactorCausa.RECURSO_COMPARTIDO);
-        assertThat(causa.factores().getFirst().horas()).isEqualByComparingTo("160");
-        assertThat(causa.factores().getFirst().porcentajeDelDeficit()).isEqualByComparingTo("100");
+        assertThat(causa.factores().getFirst().horas()).isEqualByComparingTo("40");
+        assertThat(causa.factores().getFirst().porcentajeDelDeficit()).isEqualByComparingTo("100.00");
     }
 
     @Test
-    @DisplayName("Tiempo de procesamiento: supera umbral de 10 % genera factor; bajo umbral no genera")
+    @DisplayName("Tiempo de procesamiento: supera umbral de 10 % genera factor acotado al deficit")
     void tiempoProcesamientoUmbral() {
         // ref = 0.20. t = 0.21 -> supera en 5 % (bajo umbral del 10 %)
         ReporteRecurso lineaBajo = crearLinea(new BigDecimal("0.21"), BigDecimal.ZERO);
@@ -99,19 +100,19 @@ class DetectorCausasTest {
         assertThat(causaBajo.factores()).noneMatch(f -> f.factor() == FactorCausa.TIEMPO_PROCESAMIENTO);
 
         // ref = 0.20. t = 0.25 -> supera en 25 % (supera umbral del 10 %)
-        // exceso = 360 * (0.25 - 0.20) / 0.25 = 360 * 0.05 / 0.25 = 72
+        // exceso bruto = 360 * 0.05 / 0.25 = 72, pero el deficit es 40 -> acotado a 40
         ReporteRecurso lineaSobre = crearLinea(new BigDecimal("0.25"), BigDecimal.ZERO);
         CausaDeficitRecurso causaSobre = detector.detectar(r, lineaSobre, new BigDecimal("0.20"), new BigDecimal("360"));
 
         assertThat(causaSobre.factores()).anyMatch(f -> f.factor() == FactorCausa.TIEMPO_PROCESAMIENTO);
         assertThat(causaSobre.factores().stream().filter(f -> f.factor() == FactorCausa.TIEMPO_PROCESAMIENTO).findFirst().get().horas())
-                .isEqualByComparingTo("72");
+                .isEqualByComparingTo("40");
     }
 
     @Test
     @DisplayName("Merma genera factor por diferencia con merma cero")
     void merma() {
-        // aporte = 200, aporteSinMerma = 180 -> merma = 20
+        // aporte = 200, aporteSinMerma = 180 -> merma = 20. deficit = 30 -> merma 20 + demanda 10
         AnalisisRecursoReporte r = crearAnalisis(
                 new BigDecimal("200"), new BigDecimal("200"), new BigDecimal("170"),
                 new BigDecimal("30"), 1);
@@ -125,7 +126,7 @@ class DetectorCausasTest {
     }
 
     @Test
-    @DisplayName("Tiempo no disponible genera factor")
+    @DisplayName("Tiempo no disponible genera factor acotado")
     void tiempoNoDisponible() {
         ReporteRecurso linea = crearLinea(new BigDecimal("0.2"), new BigDecimal("25"));
         AnalisisRecursoReporte r = crearAnalisis(
@@ -140,24 +141,29 @@ class DetectorCausasTest {
     }
 
     @Test
-    @DisplayName("Factores quedan ordenados por horas de mayor a menor y el porcentaje se topa en 100")
-    void ordenYTopePorcentaje() {
+    @DisplayName("Los factores normalizados nunca suman más que el déficit total")
+    void factoresNormalizadosNuncaSumanMasQueElDeficit() {
         // deficit = 50
-        // compartido = 80 (pct 100 %)
-        // tiempo no disp = 20 (pct 40 %)
-        // merma = 10 (pct 20 %)
+        // compartidoBruto = 20 (min(20, 50) = 20, restante = 30)
+        // mermaBruto = 15 (min(15, 30) = 15, restante = 15)
+        // noDisponibleBruto = 10 (min(10, 15) = 10, restante = 5)
+        // demanda residual = 5
         AnalisisRecursoReporte r = crearAnalisis(
-                new BigDecimal("200"), new BigDecimal("280"), new BigDecimal("230"),
+                new BigDecimal("200"), new BigDecimal("220"), new BigDecimal("170"),
                 new BigDecimal("50"), 1);
-        ReporteRecurso linea = crearLinea(new BigDecimal("0.2"), new BigDecimal("20"));
+        ReporteRecurso linea = crearLinea(new BigDecimal("0.2"), new BigDecimal("10"));
 
-        CausaDeficitRecurso causa = detector.detectar(r, linea, new BigDecimal("0.2"), new BigDecimal("190"));
+        CausaDeficitRecurso causa = detector.detectar(r, linea, new BigDecimal("0.2"), new BigDecimal("185"));
 
-        assertThat(causa.causaPrincipal()).isEqualTo(FactorCausa.RECURSO_COMPARTIDO);
-        assertThat(causa.factores()).hasSize(3);
-        assertThat(causa.factores().get(0).factor()).isEqualTo(FactorCausa.RECURSO_COMPARTIDO);
-        assertThat(causa.factores().get(0).porcentajeDelDeficit()).isEqualByComparingTo("100.00");
-        assertThat(causa.factores().get(1).factor()).isEqualTo(FactorCausa.TIEMPO_NO_DISPONIBLE);
-        assertThat(causa.factores().get(2).factor()).isEqualTo(FactorCausa.MERMA);
+        assertThat(causa).isNotNull();
+        BigDecimal sumaHoras = causa.factores().stream()
+                .map(DetalleFactorCausa::horas)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        assertThat(sumaHoras).isEqualByComparingTo(new BigDecimal("50"));
+
+        BigDecimal sumaPct = causa.factores().stream()
+                .map(DetalleFactorCausa::porcentajeDelDeficit)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        assertThat(sumaPct).isEqualByComparingTo(new BigDecimal("100.00"));
     }
 }

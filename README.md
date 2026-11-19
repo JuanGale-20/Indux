@@ -1,463 +1,252 @@
-# Indux
+# Indux — Backend API
 
-**Plataforma web empresarial para el análisis de capacidad y la detección de cuellos de botella en procesos organizacionales.**
+**Plataforma web empresarial para el análisis de capacidad operativa, detección de cuellos de botella y optimización de procesos bajo la metodología SteelForce.**
 
-![Estado del proyecto](https://img.shields.io/badge/Estado-En%20desarrollo-orange)
+![Estado del proyecto](https://img.shields.io/badge/Estado-Producci%C3%B3n%20%2F%20Activo-brightgreen)
 ![Java](https://img.shields.io/badge/Java-21-blue)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-6DB33F)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1)
 ![Arquitectura](https://img.shields.io/badge/Arquitectura-Hexagonal-purple)
+![Licencia](https://img.shields.io/badge/Licencia-MIT-green)
 
-## Acerca del proyecto
+---
 
-**Indux** es una plataforma web empresarial en desarrollo, orientada al monitoreo y análisis de procesos organizacionales. Su objetivo es ayudar a identificar restricciones de capacidad, detectar posibles cuellos de botella y proporcionar indicadores que faciliten la toma de decisiones.
+## Índice
 
-La plataforma aplica la metodología **SteelForce**, diseñada con apoyo de ingenieros industriales, para analizar la capacidad operativa de procesos en sectores como manufactura, producción, logística, distribución y actividades administrativas repetitivas.
+1. [Acerca del Proyecto](#acerca-del-proyecto)
+2. [Metodología SteelForce y ODS 9](#metodología-steelforce-y-ods-9)
+3. [Arquitectura del Sistema](#arquitectura-del-sistema)
+4. [Módulos y Funcionalidades](#módulos-y-funcionalidades)
+5. [Asistente Inteligente SteelForce (Google Gemini + Contingencia Local)](#asistente-inteligente-steelforce)
+6. [Seguridad y Control de Acceso (RBAC)](#seguridad-y-control-de-acceso-rbac)
+7. [Requisitos Previos](#requisitos-previos)
+8. [Puesta en Marcha Rápida](#puesta-en-marcha-rápida)
+9. [Variables de Entorno (.env)](#variables-de-entorno-env)
+10. [Documentación de la API (Swagger / OpenAPI)](#documentación-de-la-api-swagger--openapi)
+11. [Colección Postman y Pruebas Automatizadas](#colección-postman-y-pruebas-automatizadas)
+12. [Estructura del Proyecto](#estructura-del-proyecto)
 
-El proyecto busca contribuir al **Objetivo de Desarrollo Sostenible 9 (ODS 9)**: Industria, innovación e infraestructura.
+---
 
-> **Estado actual:** Indux se encuentra en desarrollo activo. El backend cuenta con funcionalidades implementadas y pruebas automatizadas. El frontend y otras capacidades de la plataforma se desarrollarán e integrarán progresivamente. Las funcionalidades descritas como planificadas todavía no deben considerarse terminadas.
+## Acerca del Proyecto
 
-## Objetivos
+**Indux** es una plataforma orientada a la ingeniería industrial que permite diagnosticar la capacidad instalada, calcular horas requeridas y disponibles, identificar restricciones operativas (cuellos de botella) y proponer planes de acción estructurados.
 
-- Calcular las horas requeridas y disponibles de los procesos.
-- Medir la utilización de la capacidad y la holgura operativa.
-- Clasificar los procesos según su nivel de utilización.
-- Identificar y priorizar procesos que puedan presentar restricciones.
-- Proporcionar información que apoye las decisiones operativas.
-- Incorporar progresivamente herramientas de análisis y recomendaciones asistidas por inteligencia artificial.
+La plataforma soporta empresas multi-tenant con aislamiento estricto de datos por empresa y perfiles de usuario basados en roles (`ADMIN`, `ANALISTA`, `LIDER`).
 
-## Funcionalidades
+---
 
-### Implementadas en el backend
+## Metodología SteelForce y ODS 9
 
-- Autenticación de usuarios mediante JWT.
-- Control de acceso basado en roles: `ADMIN`, `LIDER` y `ANALISTA`.
-- Gestión de empresas y usuarios.
-- Gestión de productos y procesos.
-- Validación de datos de empresas, productos y procesos según la fase 2 de SteelForce.
-- Distinción entre errores críticos y advertencias de validación.
-- Cálculo de indicadores de capacidad, utilización y holgura.
-- Aislamiento de información por empresa.
-- Migraciones de base de datos mediante Flyway.
-- Pruebas automatizadas del dominio, los servicios, la persistencia y la API.
+El núcleo del motor analítico implementa la metodología industrial **SteelForce**, alineada con el **ODS 9 (Industria, Innovación e Infraestructura)** de las Naciones Unidas.
 
-### En desarrollo o planificadas
+### Indicadores Clave:
+- **Horas Requeridas ($H_{req}$):** Tiempo estándar necesario para satisfacer la demanda de producción considerando mermas del proceso.
+- **Horas Disponibles ($H_{disp}$):** Capacidad temporal disponible según turnos, jornadas y demoras operativas.
+- **Utilización ($U$):** Relación porcentual entre carga y capacidad:
+  $$\text{Utilización} = \left(\frac{H_{req}}{H_{disp}}\right) \times 100\%$$
+- **Holgura Operativa ($H$):** Margen de capacidad remanente ($H_{disp} - H_{req}$).
+- **Déficit de Capacidad:** Horas faltantes en recursos sobrecargados ($\max(0, H_{req} - H_{disp})$).
 
-- Frontend web con Angular y Tailwind CSS.
-- Integración completa entre el frontend y la API REST.
-- Gestión de recursos compartidos.
-- Reportes operativos e históricos.
-- Visualización de tendencias.
-- Recomendaciones para apoyar la mejora de los procesos.
-- Asistente de inteligencia artificial para explicar resultados y ofrecer recomendaciones.
+### Clasificación Operativa de Recursos:
+| Clasificación | Rango de Utilización | Significado Operativo |
+| :--- | :---: | :--- |
+| **Baja Utilización** | $< 80\%$ | Capacidad ociosa / subutilización |
+| **Utilización Adecuada** | $80\% \le U \le 90\%$ | Rango óptimo y balanceado |
+| **Capacidad Ajustada** | $90\% < U \le 100\%$ | Alerta operacional ante variabilidad |
+| **Sobrecarga** | $> 100\%$ | Cuello de botella activo |
 
-Las funcionalidades se incorporarán progresivamente a medida que avance el desarrollo.
+El recurso con mayor sobrecarga recibe automáticamente la **Prioridad 1 (Restricción Primaria)** de la planta.
 
-## Metodología de análisis
+---
 
-Indux calcula indicadores de capacidad para ayudar a interpretar la carga operativa de cada proceso.
+## Arquitectura del Sistema
 
-Entre los indicadores contemplados se encuentran:
+El backend sigue rigurosamente los principios de **Arquitectura Hexagonal (Puertos y Adaptadores)**, dividida en tres capas:
 
-- **Horas requeridas:** estimación del tiempo necesario para atender la demanda.
-- **Horas disponibles:** capacidad temporal disponible según los parámetros operativos.
-- **Utilización:** relación entre las horas requeridas y las horas disponibles.
-- **Holgura:** capacidad que permanece disponible después de atender la demanda.
-
-La clasificación de procesos utiliza los siguientes umbrales provisionales:
-
-| Clasificación | Utilización |
-|---|---:|
-| `SIN_RESTRICCION` | Menor al 80 % |
-| `POSIBLE_RESTRICCION` | Desde el 80 % hasta el 100 % |
-| `RESTRICCION_CAPACIDAD` | Mayor al 100 % |
-
-Los parámetros operativos están sujetos a revisión y validación por parte de los ingenieros industriales responsables de la metodología.
-
-## Arquitectura
-
-El backend utiliza una arquitectura hexagonal basada en puertos y adaptadores, organizada en tres capas principales:
-
-```text
-Indux Backend
-├── domain
-│   ├── model
-│   ├── service
-│   ├── validacion
-│   └── exception
+```
+src/main/java/com/indux/induxbackend/
+├── domain/                  # Lógica pura del negocio (sin dependencias de frameworks)
+│   ├── model/               # Entidades del dominio inmutables (Records)
+│   ├── service/             # Motor analítico SteelForce y detector causal
+│   ├── validacion/          # Reglas de validación sintáctica y de integridad
+│   └── exception/           # Excepciones de negocio y dominio
 │
-├── application
-│   ├── port
-│   │   ├── in
-│   │   └── out
-│   └── service
+├── application/             # Casos de uso de la aplicación
+│   ├── port/
+│   │   ├── in/              # Casos de uso (Interfaces primarias)
+│   │   └── out/             # Puertos hacia persistencia, seguridad y LLM
+│   └── service/             # Orquestación de casos de uso y lógica de aplicación
 │
-└── infrastructure
-    ├── adapter
-    │   ├── in
-    │   │   └── web
-    │   └── out
-    │       └── persistence
-    ├── security
-    └── config
+└── infrastructure/          # Conexión con el exterior (frameworks y librerías)
+    ├── adapter/
+    │   ├── in/web/          # Controladores REST, DTOs y manejador global de errores
+    │   └── out/
+    │       ├── persistence/ # Adaptadores JPA, Repositorios Spring Data y Mappers
+    │       ├── security/    # BCrypt y proveedor de hashing
+    │       └── llm/         # Adaptador HTTP para Google Gemini (AI Studio)
+    ├── config/              # Configuraciones de beans de Spring
+    └── security/            # Filtros JWT, UserDetailsService y políticas de seguridad
 ```
 
-La separación de responsabilidades permite mantener las reglas del negocio independientes de los detalles de infraestructura y facilita las pruebas, el mantenimiento y la evolución del sistema.
+---
 
-La arquitectura general contempla un frontend desacoplado que consumirá una API REST sin estado.
+## Módulos y Funcionalidades
 
-## Tecnologías
+- **Autenticación y Seguridad:** JWT con firma HMAC-SHA256, expiración configurable y control de revocación inmediata para usuarios inactivos.
+- **Gestión Multi-Tenant:**
+  - Empresas (`/api/empresas`): Registro y administración (solo `ADMIN`).
+  - Usuarios (`/api/usuarios`): Creación con roles `ADMIN`, `ANALISTA` y `LIDER`.
+  - Productos y Procesos (`/api/productos`, `/api/procesos`): Configuración de secuencias operativas, tiempos estándar y porcentajes de merma.
+  - Recursos (`/api/recursos`): Estaciones de trabajo, capacidad instalada y costos horarios.
+- **Reportes Operativos (`/api/reportes`):**
+  - Ciclo de vida completo: `BORRADOR` $\to$ `VALIDADO` $\to$ `ANALIZADO`.
+  - Validación sintáctica de Fase 2 (distinción estricta entre advertencias y errores críticos).
+  - Cálculo instantáneo de utilización, holguras, déficit y recomendaciones automáticas.
+  - Desglose causal del déficit (identificación de causas raíz: Demanda Excesiva, Tiempos de Ciclo Altos, etc.).
+- **Importación Masiva (`/api/importaciones`):** Carga masiva de reportes estructurados.
+- **Simulador What-If / Calculadora (`/api/analisis/calcular`):** Motor de cálculo instantáneo para escenarios predictivos.
 
-### Backend
+---
 
-- Java 21
-- Spring Boot
-- Spring Web
-- Spring Data JPA e Hibernate
-- Spring Security
-- JWT mediante JJWT
-- BCrypt para el almacenamiento seguro de contraseñas
-- Bean Validation
-- Spring Boot Actuator
-- Lombok
-- Maven
+## Asistente Inteligente SteelForce
 
-### Base de datos e infraestructura
+El backend incorpora un asistente de IA conversacional (`/api/asistente`):
+- **Motor Primario:** **Google Gemini** (`gemini-3.8-flash`) vía Google AI Studio API.
+- **Seguridad de Credenciales:** La clave API se transmite únicamente mediante el encabezado `x-goog-api-key` y `Authorization: Bearer`. **Nunca** en parámetros de URL ni en logs del servidor.
+- **Aislamiento por Rol:**
+  - `ADMIN` y `ANALISTA`: Acceden a métricas globales de su empresa.
+  - `LIDER`: El contexto inyectado al modelo **filtra automáticamente** solo las estaciones y recursos asignados formalmente a ese líder. Recursos ajenos nunca se envían al LLM.
+- **Inferencia Estable y Anti-Alucinación:**
+  - Temperatura fijada en **0.25** ($\le 0.3$) para máxima estabilidad técnica.
+  - Límite de 2500 caracteres por pregunta y truncado de historial a los últimos 8 mensajes.
+  - Prompt estricto con prohibición de LaTeX (fórmulas en texto plano) y regla de cero invención (*"NUNCA inventes números... Si falta un dato, di: 'No dispongo de ese dato'"*).
+- **Contingencia Local Silenciosa:** Si no hay clave API configurada o el servicio externo falla (404, 429, timeout de 15 s, caída de red), el sistema conmuta instantáneamente al **Motor Local SteelForce** entregando respuestas diagnósticas sin exponer errores técnicos al usuario.
 
-- PostgreSQL 16
-- Docker y Docker Compose
-- Flyway para las migraciones de base de datos
+---
 
-### Frontend previsto
+## Seguridad y Control de Acceso (RBAC)
 
-- Angular
-- TypeScript
-- Tailwind CSS
-- Componentes standalone
-- Signals
-- Rutas lazy loading
-- Guards e interceptores funcionales
-- Formularios reactivos
+| Endpoint | ADMIN | ANALISTA | LIDER |
+| :--- | :---: | :---: | :---: |
+| `POST /api/auth/login` | Público | Público | Público |
+| `/api/empresas/**` | Lectura / Escritura | Denegado (403) | Denegado (403) |
+| `/api/usuarios/**` | Lectura / Escritura | Denegado (403) | Denegado (403) |
+| `/api/productos/**`, `/api/procesos/**`, `/api/recursos/**` | Lectura / Escritura | Lectura / Escritura (Su Empresa) | Solo Lectura |
+| `/api/reportes/**` (Crear / Validar / Analizar) | Completo | Completo (Su Empresa) | Solo Lectura / Consultas |
+| `/api/asistente/**` | Completo | Completo (Su Empresa) | Filtrado a sus estaciones |
 
-**Nota:** las tecnologías del frontend corresponden a la arquitectura prevista y no implican que su integración esté terminada.
+---
 
-## Requisitos del entorno de desarrollo
+## Requisitos Previos
 
-- JDK 21.
-- Docker Desktop con Docker Compose, o una instalación compatible de PostgreSQL 16.
-- Git.
-- Conexión de red.
-- Maven Wrapper, incluido en el repositorio.
+- **Java JDK:** 21 LTS (OpenJDK / Eclipse Adoptium recomendado).
+- **Docker:** Para ejecutar el contenedor de base de datos PostgreSQL.
+- **Maven:** Incluido a través de `mvnw` y `mvnw.cmd`.
 
-Para desarrollar el frontend posteriormente también será necesario instalar Node.js y las herramientas correspondientes de Angular.
+---
 
-## Instalación y ejecución del backend
+## Puesta en Marcha Rápida
 
 ### 1. Clonar el repositorio
-
 ```bash
 git clone https://github.com/JuanGale-20/Indux.git
 cd Indux
 ```
 
-### 2. Configurar las variables de entorno
-
-Crea un archivo `.env` en la raíz del proyecto tomando como base `.env.example`:
-
-En Windows (PowerShell):
+### 2. Configurar variables de entorno
+Copia la plantilla y crea tu archivo `.env`:
 ```powershell
 Copy-Item .env.example .env
 ```
-En Linux / macOS:
-```bash
-cp .env.example .env
-```
 
-| Variable | Descripción | Valor por defecto / Ejemplo |
-|---|---|---|
-| `INDUX_DB_URL` | URL JDBC de conexión a PostgreSQL | `jdbc:postgresql://localhost:5432/indux` |
-| `INDUX_DB_USERNAME` | Usuario de la base de datos | `indux_user` |
-| `INDUX_DB_PASSWORD` | Contraseña de la base de datos | `indux_pass` |
-| `INDUX_JWT_SECRET` | Clave secreta HMAC en Base64 (mínimo 256 bits) | `/zK8g7pwYlb7fM1JVbgstRmuISrgXKcmel6Mn7uQCBY=` |
-| `INDUX_ADMIN_EMAIL` | Correo del usuario administrador inicial | `admin@indux.com` |
-| `INDUX_ADMIN_PASSWORD` | Contraseña inicial del administrador | `reemplaza_por_una_clave_segura` |
-| `INDUX_CORS_ORIGEN` | Origen permitido para CORS (frontend) | `http://localhost:4200` |
-| `SWAGGER_ENABLED` | Activar o desactivar OpenAPI y Swagger UI | `true` |
-
-
-### 3. Iniciar PostgreSQL
-
-Con las variables necesarias configuradas, ejecuta:
-
+### 3. Levantar la base de datos PostgreSQL con Docker
 ```bash
 docker compose up -d
 ```
+El contenedor inicializará PostgreSQL en el puerto `5432` con usuario `indux_user` y base de datos `indux`.
 
-Este comando inicia el servicio PostgreSQL definido en `docker-compose.yml`.
-
-### 4. Ejecutar el backend
-
-En Windows:
-
+### 4. Ejecutar el Backend
+En Windows (PowerShell):
 ```powershell
-.\start-server.ps1
-# O mediante CMD:
-start.bat
-# O directamente con Maven:
 .\mvnw.cmd spring-boot:run
 ```
-
-En Linux o macOS:
-
+En Linux / macOS:
 ```bash
 ./mvnw spring-boot:run
 ```
 
-La API estará disponible en `http://localhost:8080`, siempre que el inicio finalice correctamente y no se haya modificado su configuración.
+Las migraciones de Flyway se aplicarán automáticamente al iniciar (V1 a V4). La API quedará disponible en `http://localhost:8080`.
 
-### 5. Ejecutar las pruebas
+---
 
-En Windows:
+## Variables de Entorno (.env)
 
-```powershell
-.\run-tests.ps1
-# O con Maven directamente:
-.\mvnw.cmd test
+| Variable | Descripción | Valor por Defecto / Ejemplo |
+| :--- | :--- | :--- |
+| `INDUX_DB_URL` | URL de conexión JDBC a PostgreSQL | `jdbc:postgresql://localhost:5432/indux` |
+| `INDUX_DB_USERNAME` | Usuario de base de datos | `indux_user` |
+| `INDUX_DB_PASSWORD` | Contraseña de base de datos | `<tu_contrasena>` |
+| `INDUX_JWT_SECRET` | Clave secreta HMAC-SHA256 (Base64 $\ge$ 256 bits) | `<clave_base64>` |
+| `INDUX_ADMIN_EMAIL` | Correo del administrador inicial | `admin@indux.com` |
+| `INDUX_ADMIN_PASSWORD` | Contraseña del administrador inicial | `<tu_clave_segura>` |
+| `INDUX_CORS_ORIGEN` | Origen frontend permitido | `http://localhost:4200` |
+| `SWAGGER_ENABLED` | Habilitación de OpenAPI / Swagger | `true` |
+| `GEMINI_API_KEY` | Clave API de Google AI Studio (opcional) | `AIzaSy...` |
+| `GEMINI_MODEL` | Modelo de Gemini utilizado | `gemini-3.8-flash` |
+| `GEMINI_BASE_URL` | Endpoint base oficial de Gemini | `https://generativelanguage.googleapis.com/v1beta/openai` |
+| `INDUX_LLM_TIMEOUT` | Timeout máximo en segundos para el LLM | `15` |
+
+---
+
+## Documentación de la API (Swagger / OpenAPI)
+
+Con la aplicación en ejecución:
+- **Swagger UI:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **OpenAPI JSON:** [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+
+---
+
+## Colección Postman y Pruebas Automatizadas
+
+El repositorio incluye herramientas integrales de prueba:
+- **Pruebas Automatizadas (178 tests pasando al 100%):**
+  ```powershell
+  .\mvnw.cmd test
+  ```
+- **Colección Postman Completa:**
+  El archivo [`Indux_Plataforma_Postman_Collection.json`](./Indux_Plataforma_Postman_Collection.json) contiene todas las peticiones con variables dinámicas, autenticación automática JWT y escenarios de prueba de Fase 2.
+- **Generador de Colección:** Script Python [`generar_postman_collection.py`](./generar_postman_collection.py) para actualizar o regenerar la colección Postman ante cambios en la API.
+
+---
+
+## Estructura del Proyecto
+
+```
+Indux/
+├── .mvn/                               # Wrapper de Maven
+├── src/
+│   ├── main/
+│   │   ├── java/com/indux/induxbackend/
+│   │   └── resources/
+│   │       ├── db/migration/           # Migraciones Flyway V1..V4
+│   │       └── application.yml         # Configuración Spring Boot
+│   └── test/
+│       └── java/com/indux/induxbackend/# Batería de 178 pruebas unitarias e integración
+├── .env.example                        # Plantilla de variables de entorno
+├── .gitignore                          # Exclusiones de Git (seguridad y artefactos)
+├── docker-compose.yml                  # Definición del contenedor PostgreSQL
+├── generar_postman_collection.py       # Script generador de la suite Postman
+├── Indux_Plataforma_Postman_Collection.json # Colección de pruebas de integración Postman
+├── mvnw / mvnw.cmd                     # Binarios del Maven Wrapper
+├── pom.xml                             # Configuración del proyecto Maven y dependencias
+├── README.md                           # Documentación principal del backend
+├── run-backend.cmd                     # Script rápido de ejecución en Windows
+└── run-tests.ps1                       # Script de ejecución de pruebas en PowerShell
 ```
 
-En Linux o macOS:
-
-```bash
-./mvnw test
-```
-
-Las pruebas permiten comprobar el comportamiento de los componentes cubiertos por la suite automatizada.
-
-
-#### Pruebas de integración con Newman / Postman
-
-Puedes ejecutar la suite completa de 61 peticiones y 105 aserciones desde la terminal:
-
-```bash
-npx newman run Indux_Plataforma_Postman_Collection.json
-```
-O importando el archivo `Indux_Plataforma_Postman_Collection.json` en Postman con el **Collection Runner**.
-
-
 ---
-
-## 6. Documentación Swagger / OpenAPI
-
-Cuando la aplicación esté en ejecución y `SWAGGER_ENABLED=true`:
-- **Interfaz Swagger UI:** `http://localhost:8080/swagger-ui.html`
-- **Definición OpenAPI (JSON):** `http://localhost:8080/v3/api-docs`
-
-Desde la interfaz web de Swagger UI puedes usar el botón **Authorize** para introducir el token JWT obtenido en el login (`Bearer <token>`).
-
----
-
----
-
-## 8. Catálogo Completo de Endpoints REST
-
-### Autenticación
-| Método | Ruta | Roles | Descripción |
-|---|---|---|---|
-| `POST` | `/api/auth/login` | Público | Autenticación con correo y contraseña. Devuelve token JWT. |
-
-### Empresas
-| Método | Ruta | Roles | Descripción |
-|---|---|---|---|
-| `POST` | `/api/empresas` | ADMIN | Registrar una nueva empresa. |
-| `GET` | `/api/empresas` | ADMIN | Listar todas las empresas registradas. |
-| `GET` | `/api/empresas/{id}` | Autenticado | Consultar una empresa (aislado por empresa). |
-| `PUT` | `/api/empresas/{id}` | ADMIN | Actualizar datos de una empresa. |
-| `DELETE` | `/api/empresas/{id}` | ADMIN | Desactivar una empresa. |
-
-### Usuarios
-| Método | Ruta | Roles | Descripción |
-|---|---|---|---|
-| `POST` | `/api/usuarios` | ADMIN | Registrar un nuevo usuario y rol. |
-| `GET` | `/api/usuarios` | ADMIN | Listar todos los usuarios. |
-| `PUT` | `/api/usuarios/{id}` | ADMIN | Actualizar datos, empresa o rol de un usuario. |
-| `DELETE` | `/api/usuarios/{id}` | ADMIN | Desactivar a un usuario. |
-
-### Productos
-| Método | Ruta | Roles | Descripción |
-|---|---|---|---|
-| `POST` | `/api/productos` | ADMIN | Crear un nuevo producto. |
-| `GET` | `/api/productos/{id}` | Autenticado | Consultar un producto por ID. |
-| `GET` | `/api/productos?empresaId={id}` | Autenticado | Listar productos de una empresa. |
-| `PUT` | `/api/productos/{id}` | ADMIN | Actualizar datos de un producto. |
-| `DELETE` | `/api/productos/{id}` | ADMIN | Eliminar un producto. |
-
-### Procesos
-| Método | Ruta | Roles | Descripción |
-|---|---|---|---|
-| `POST` | `/api/procesos` | ADMIN | Crear una etapa de proceso productivo con merma y unidad. |
-| `GET` | `/api/procesos/{id}` | Autenticado | Consultar un proceso por ID. |
-| `GET` | `/api/productos/{id}/procesos` | Autenticado | Listar procesos ordenados de un producto. |
-| `PUT` | `/api/procesos/{id}` | ADMIN | Actualizar proceso (secuencia, líder, merma, unidades). |
-| `DELETE` | `/api/procesos/{id}` | ADMIN | Eliminar una etapa de proceso. |
-
-### Recursos y Vínculos
-| Método | Ruta | Roles | Descripción |
-|---|---|---|---|
-| `POST` | `/api/recursos` | ADMIN | Crear un recurso (máquina, línea, estación). |
-| `GET` | `/api/recursos/{id}` | Autenticado | Consultar un recurso por ID. |
-| `GET` | `/api/recursos?empresaId={id}` | Autenticado | Listar recursos de una empresa. |
-| `PUT` | `/api/recursos/{id}` | ADMIN | Actualizar datos y cantidad de un recurso. |
-| `DELETE` | `/api/recursos/{id}` | ADMIN | Eliminar un recurso. |
-| `POST` | `/api/recursos/{id}/procesos` | ADMIN | Vincular recurso a proceso con tiempo de referencia. |
-| `DELETE` | `/api/recursos/{id}/procesos/{procesoId}` | ADMIN | Desvincular recurso de un proceso. |
-| `GET` | `/api/recursos/{id}/procesos` | Autenticado | Listar procesos vinculados al recurso. |
-| `GET` | `/api/procesos/{id}/recursos` | Autenticado | Listar recursos vinculados al proceso. |
-| `GET` | `/api/recursos/{id}/historico?limite=12` | Autenticado | Histórico de utilización depurado y tendencia calculada. |
-
-### Reportes de Producción y Análisis
-| Método | Ruta | Roles | Descripción |
-|---|---|---|---|
-| `POST` | `/api/reportes` | ADMIN, ANALISTA | Crear un reporte con sus líneas de recursos. |
-| `GET` | `/api/reportes` | Autenticado | Listar reportes por producto o empresa. |
-| `GET` | `/api/reportes/{id}` | Autenticado | Consultar detalle de un reporte (filtrado por líder). |
-| `PUT` | `/api/reportes/{id}` | ADMIN, ANALISTA | Actualizar reporte y líneas (vuelve a `BORRADOR`). |
-| `DELETE` | `/api/reportes/{id}` | ADMIN, ANALISTA | Eliminar un reporte. |
-| `POST` | `/api/reportes/{id}/validar` | ADMIN, ANALISTA | Validar coherencia del reporte (estado `VALIDADO` o `CON_ERRORES`). |
-| `GET` | `/api/reportes/{id}/validaciones` | Autenticado | Listar resultados detallados de validación. |
-| `POST` | `/api/reportes/{id}/analizar` | ADMIN, ANALISTA | Validar y analizar persistiendo resultados (200 o 422). |
-| `GET` | `/api/reportes/{id}/analisis` | Autenticado | Consultar el análisis persistido (409 si no está analizado). |
-| `GET` | `/api/reportes/{id}/recomendaciones` | Autenticado | Obtener recomendaciones operativas clasificadas por nivel. |
-| `GET` | `/api/reportes/{id}/causas` | Autenticado | Desglose cuantitativo de factores causantes del déficit. |
-
-### Importación Masiva
-| Método | Ruta | Roles | Descripción |
-|---|---|---|---|
-| `POST` | `/api/importaciones/reportes` | ADMIN, ANALISTA | Importar reportes vía Excel (`.xlsx`) o CSV (`confirmar=false` para vista previa, `confirmar=true` para guardar). |
-| `GET` | `/api/importaciones/reportes/plantilla` | ADMIN, ANALISTA | Descargar plantilla oficial en formato `.xlsx` o `.csv`. |
-
-### Análisis al Vuelo
-| Método | Ruta | Roles | Descripción |
-|---|---|---|---|
-| `POST` | `/api/analisis/calcular` | Autenticado | Cálculo instantáneo sin persistencia. |
-
----
-
----
-
-## Base de datos y modelo de datos
-
-Indux cuenta con una base de datos relacional desarrollada en **PostgreSQL 16**, diseñada para organizar la información empresarial, registrar los procesos operativos y almacenar los datos necesarios para analizar la capacidad y detectar posibles restricciones.
-
-El modelo de datos contempla entidades relacionadas con la gestión empresarial, la configuración de procesos, la disponibilidad de recursos, el registro de reportes y el cálculo de indicadores. La estructura se gestiona mediante migraciones versionadas con Flyway.
-
-### Modelo de datos implementado
-
-La base de datos está organizada en las siguientes tablas:
-
-| Área | Tablas |
-|---|---|
-| Gestión empresarial | `empresa`, `usuario` |
-| Productos y procesos | `producto`, `proceso`, `proceso_recurso` |
-| Recursos operativos | `recurso`, `unidad_medida`, `equivalencia_unidad` |
-| Reportes operativos | `reporte`, `reporte_recurso` |
-| Análisis de capacidad | `analisis_recurso` |
-| Validación de información | `validacion_resultado` |
-| Control de migraciones | `flyway_schema_history` |
-
-### Capacidades del modelo
-
-- **Gestión empresarial:** almacenamiento de empresas, usuarios, roles y estados de actividad.
-- **Organización de procesos:** relación entre productos, procesos y recursos utilizados en las operaciones.
-- **Administración de unidades de medida:** definición de unidades y factores de equivalencia para facilitar la consistencia de los datos.
-- **Registro operativo:** almacenamiento de reportes con demanda, producción real, periodos de análisis y parámetros de operación.
-- **Análisis de capacidad:** persistencia de horas requeridas y disponibles, capacidad, utilización, holgura, déficit, clasificación y prioridad.
-- **Validación de datos:** registro de hallazgos asociados a reportes, con su grupo, variable, severidad y mensaje.
-- **Evolución controlada del esquema:** versionamiento de los cambios estructurales mediante migraciones Flyway.
-
-### Integridad y organización de la información
-
-El esquema utiliza identificadores numéricos, columnas obligatorias y opcionales, tipos de datos adecuados para cantidades e indicadores, fechas y marcas temporales. Las relaciones entre entidades permiten organizar la información necesaria para las operaciones de la plataforma.
-
-El diseño también contempla la asociación de productos y recursos con empresas, así como la relación de usuarios con su empresa correspondiente.
-
-**Estado:** el esquema de base de datos forma parte del desarrollo de Indux. La implementación integral de cada funcionalidad que utiliza estas tablas continúa sujeta al avance del backend y de la integración con el frontend.
-
-
-## Seguridad
-
-Indux incorpora medidas de seguridad en el backend, entre ellas:
-
-- Autenticación basada en JWT.
-- Contraseñas protegidas mediante BCrypt.
-- Autorización basada en roles.
-- Separación de la información por empresa.
-- Configuración de credenciales mediante variables de entorno.
-- Restricción de CORS al origen configurado para el frontend.
-- Manejo uniforme de errores de la API.
-
-Estas medidas forman parte de la implementación actual y continúan sujetas a validación conforme evolucione el proyecto.
-
-Antes de un despliegue productivo se deben revisar, entre otros aspectos, HTTPS, gestión de secretos, permisos, políticas de acceso, copias de seguridad y configuración del servidor.
-
----
-
-## Perfiles de usuario y control de acceso
-
-La plataforma contempla tres roles principales:
-
-- **Administrador (`ADMIN`):** administra empresas y usuarios y supervisa la configuración global de la plataforma.
-- **Líder de proceso (`LIDER`):** consulta los indicadores, análisis y alertas correspondientes a los procesos bajo su responsabilidad.
-- **Analista (`ANALISTA`):** gestiona productos, procesos, recursos y genera reportes de producción con validación y análisis cuantitativo de capacidad.
-
-### Matriz de permisos
-
-| Rol | Descripción | Permisos Clave |
-|
-
-
----
-
-## 9. Parámetros de Dominio a Confirmar con Ingenieras Industriales
-
-Los siguientes valores se encuentran centralizados como constantes de dominio debidamente documentadas:
-
-1. `DetectorCausas.UMBRAL_TIEMPO = 1.10`: Umbral del 10 % sobre el tiempo de referencia para considerar que el tiempo de procesamiento es causa de déficit.
-2. `CalculadoraTendencia.UMBRAL_PUNTOS = 5.00`: Umbral de 5 puntos porcentuales de utilización para clasificar la tendencia en `CRECIENTE` o `DECRECIENTE`.
-
----
-
-## Clientes objetivo
-
-Indux está orientado a organizaciones que necesitan mejorar la visibilidad de su capacidad operativa, especialmente en:
-
-- Manufactura y producción.
-- Logística y distribución.
-- Operaciones industriales.
-- Procesos administrativos repetitivos.
-
-La plataforma busca ofrecer información estructurada para apoyar el análisis de procesos y la identificación de oportunidades de mejora.
-
-## Consideraciones legales
-
-El tratamiento de datos personales y el uso del software deben evaluarse de acuerdo con la normativa aplicable en Colombia, incluidas las disposiciones pertinentes sobre protección de datos personales y derechos de autor.
-
-Las referencias normativas del proyecto deben verificarse antes de un despliegue institucional o comercial.
-
-## Contribuciones
-
-Durante la etapa de desarrollo, las mejoras, correcciones y nuevas funcionalidades deben mantener la separación de responsabilidades de la arquitectura, las convenciones de código y las pruebas automatizadas.
-
-Antes de enviar cambios, se recomienda ejecutar la suite de pruebas y comprobar que no se incluyan credenciales, claves o información confidencial.
 
 ## Licencia
 
-Consulta el archivo `LICENSE` incluido en este repositorio para conocer los términos de uso y distribución aplicables.
-
----
-
-**Indux — En desarrollo.**
-
-Plataforma orientada al análisis de capacidad, la identificación de restricciones operativas y el apoyo a la toma de decisiones empresariales.
-
-**Coder - Juan Camilo Gale Muñoz**
+Distribuido bajo la Licencia MIT. Consulta el archivo `LICENSE` para más información.

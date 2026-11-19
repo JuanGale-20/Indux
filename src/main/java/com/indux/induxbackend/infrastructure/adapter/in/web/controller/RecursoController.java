@@ -5,13 +5,16 @@ import com.indux.induxbackend.application.port.in.RecursoUseCase;
 import com.indux.induxbackend.application.port.in.RecursoUseCase.ActualizarRecursoComando;
 import com.indux.induxbackend.application.port.in.RecursoUseCase.CrearRecursoComando;
 import com.indux.induxbackend.application.port.in.RecursoUseCase.VincularProcesoComando;
+import com.indux.induxbackend.domain.exception.SinPermisoException;
 import com.indux.induxbackend.domain.model.EstadoRecurso;
 import com.indux.induxbackend.domain.model.HistoricoRecurso;
 import com.indux.induxbackend.domain.model.Proceso;
 import com.indux.induxbackend.domain.model.ProcesoRecurso;
 import com.indux.induxbackend.domain.model.Recurso;
+import com.indux.induxbackend.domain.model.Rol;
 import com.indux.induxbackend.infrastructure.adapter.in.web.dto.*;
 import com.indux.induxbackend.infrastructure.security.AccesoPorEmpresa;
+import com.indux.induxbackend.infrastructure.security.UsuarioAutenticado;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api")
@@ -116,6 +120,18 @@ public class RecursoController {
                                                      Authentication autenticacion) {
         Recurso recurso = recursos.obtener(id);
         acceso.verificarEmpresa(autenticacion, recurso.empresaId());
+
+        UsuarioAutenticado usuario = (UsuarioAutenticado) autenticacion.getPrincipal();
+        if (usuario.rol() == Rol.LIDER) {
+            boolean lideraRecurso = recursos.listarVinculos(id).stream()
+                    .map(ProcesoRecurso::procesoId)
+                    .map(procesos::obtener)
+                    .anyMatch(p -> Objects.equals(p.liderId(), usuario.id()));
+            if (!lideraRecurso) {
+                throw new SinPermisoException("No tienes permiso para ver el histórico de este recurso");
+            }
+        }
+
         HistoricoRecurso historico = recursos.obtenerHistorico(id, limite);
         return HistoricoRecursoResponse.desde(historico);
     }

@@ -6,6 +6,7 @@ import com.indux.induxbackend.domain.exception.DominioException;
 import com.indux.induxbackend.domain.exception.NoEncontradoException;
 import com.indux.induxbackend.domain.exception.SinPermisoException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,13 @@ public class ManejadorErrores {
     @ExceptionHandler(ConflictoException.class)
     public ResponseEntity<ProblemDetail> conflicto(ConflictoException ex) {
         return respuesta(HttpStatus.CONFLICT, "Conflicto con los datos existentes", ex.getMessage());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ProblemDetail> violacionIntegridad(DataIntegrityViolationException ex) {
+        log.warn("Violación de integridad referencial: {}", ex.getMessage());
+        return respuesta(HttpStatus.CONFLICT, "Conflicto de integridad de datos",
+                "No se puede completar la operación porque existen datos asociados o una restricción de integridad dependiente");
     }
 
     @ExceptionHandler(DominioException.class)

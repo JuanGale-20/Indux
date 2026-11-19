@@ -9,8 +9,8 @@ spring:
 
   datasource:
     url: ${INDUX_DB_URL:jdbc:postgresql://localhost:5432/indux}
-    username: ${INDUX_DB_USERNAME}
-    password: ${INDUX_DB_PASSWORD}
+    username: ${INDUX_DB_USERNAME:indux_user}
+    password: ${INDUX_DB_PASSWORD:indux_pass}
 
   jpa:
     open-in-view: false
@@ -40,10 +40,16 @@ springdoc:
 
 indux:
   jwt:
-    secret: ${INDUX_JWT_SECRET}
+    secret: ${INDUX_JWT_SECRET:/zK8g7pwYlb7fM1JVbgstRmuISrgXKcmel6Mn7uQCBY=}
     expiracion-minutos: 120
   cors:
     origen-permitido: ${INDUX_CORS_ORIGEN:http://localhost:4200}
   admin:
     email: ${INDUX_ADMIN_EMAIL:admin@indux.com}
-    password: ${INDUX_ADMIN_PASSWORD}
+    password: ${INDUX_ADMIN_PASSWORD:admin123}
+  ia:
+    gemini:
+      api-key: ${GEMINI_API_KEY:${INDUX_LLM_API_KEY:}}
+      model: ${GEMINI_MODEL:${INDUX_LLM_MODEL:gemini-3.8-flash}}
+      base-url: ${GEMINI_BASE_URL:${INDUX_LLM_BASE_URL:https://generativelanguage.googleapis.com/v1beta/openai}}
+      timeout-segundos: ${GEMINI_TIMEOUT:${INDUX_LLM_TIMEOUT:15}}
