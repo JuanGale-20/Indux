@@ -59,3 +59,10 @@ secrets.yaml
 # OS files
 .DS_Store
 Thumbs.db
+
+# Frontend (Angular)
+node_modules/
+.angular/
+dist/
+.npm/
+.yarn/
